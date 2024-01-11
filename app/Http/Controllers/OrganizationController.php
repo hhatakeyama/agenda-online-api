@@ -17,9 +17,9 @@ class OrganizationController extends Controller
         ], 200);
     }
 
-    public function getById(Organization $organization)
-        {
-        Log::info("Searching organization id $organization");
+    public function getById(Organizations $organization)
+    {
+        Log::info("Searching organization id", [$organization]);
         return response()->json([
             "data" => $organization
         ], 200);
@@ -44,7 +44,7 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organizations $organization)
     {
-        Log::info("Updating organization", [$request]);
+        Log::info("Updating organization", [$request->id]);
         $organization->update($request->all());
         if($organization->save()) {
             return response()->json([

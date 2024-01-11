@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organizations', function (Blueprint $table) {
+        Schema::create('service_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('registeredName');
-            $table->string('tradingName');
-            $table->string('cnpj')->max(20);
+            $table->string('name');
+            $table->string('organizationId');
             $table->boolean('status')->default(true);
             $table->timestamps();
         });
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organizations');
+        Schema::dropIfExists('service_categories');
     }
 };
