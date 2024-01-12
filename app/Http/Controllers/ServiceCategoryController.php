@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Models\ServiceCategories;
 
@@ -18,12 +17,20 @@ class ServiceCategoryController extends Controller
             ], 200);
         }
 
-    public function getById(ServiceCategories $serviceCategory)
-        {
-        Log::info("Searching category id $serviceCategory");
-        return response()->json([
-            "data" => $serviceCategory
-        ], 200);
+    public function getById($id)
+    {
+        try {
+            $serviceCategory = ServiceCategories::findOrFail($id);
+            Log::info("Searching category id $serviceCategory");
+            return response()->json([
+                "data" => $serviceCategory
+            ], 200);
+        } catch(\Exception $e) {
+            Log::info("Category not found", [$id]);
+            return response()->json([
+                "message" => "Categoria não encontrada."
+            ], 200);
+        }
     }
 
     public function create(Request $request)
@@ -59,16 +66,18 @@ class ServiceCategoryController extends Controller
         }
     }
 
-    public function delete(ServiceCategories $categoria)
-     {
-        Log::info("Inativation of the category $categoria");
-        $categoria->status = false;
-        if($categoria->save()) {
+    public function delete($id)
+    {
+        try {
+            $categoria = ServiceCategories::findOrFail($id); 
+            Log::info("Inativation of the category $categoria");
+            $categoria->status = false;
+            $categoria->save();
             Log::info("Category inactivated successfully");
             return response()->json([
                 "message" => "Categoria inativada com sucesso.",
             ], 200);
-        } else {
+         } catch(\Exception $e) {
             Log::error("Error inativation of the categoria $categoria");
             return response()->json([
                 "message" => "Erro ao inativar categoria. Entre em contato com o administrador do site.",

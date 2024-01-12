@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Models\Companies;
 
 class CompanyController extends Controller
 {
-        public function get()
+    public function get()
     {
         Log::info("Searching all companies");
         $companies = Companies::all();
@@ -18,12 +17,20 @@ class CompanyController extends Controller
         ], 200);
     }
 
-    public function getById(Companies $company)
-        {
-        Log::info("Searching company id", [$company]);
-        return response()->json([
-            "data" => $company
-        ], 200);
+    public function getById($id)
+    {
+        try {
+            $company = Companies::findOrFail($id);
+            Log::info("Searching company id", [$company]);
+            return response()->json([
+                "data" => $company
+            ], 200);
+        } catch(\Exception $e) {
+            Log::info("Company not found", [$id]);
+            return response()->json([
+                "message" => "Unidade não encontrada."
+            ], 200);
+        }
     }
 
     public function create(Request $request)
@@ -60,17 +67,19 @@ class CompanyController extends Controller
         }
     }
 
-    public function delete(Companies $company)
-     {
-        Log::info("Inativation of the company $company");
-        $company->status = false;
-        if($company->save()) {
+    public function delete($id)
+    {
+        try {
+            $company = Companies::findOrFail($id); 
+            Log::info("Inativation of the company $company");
+            $company->status = false;
+            $company->save();
             Log::info("Company inactivated successfully");
             return response()->json([
                 "message" => "Unidade inativada com sucesso.",
             ], 200);
-        } else {
-            Log::error("Error inativation of the company $company");
+        } catch(\Exception $e) {
+            Log::error("Error inativation of the company $id");
             return response()->json([
                 "message" => "Erro ao inativar unidade. Entre em contato com o administrador do site.",
             ], 400);

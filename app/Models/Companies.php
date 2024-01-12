@@ -22,4 +22,8 @@ class Companies extends Model
     "socialMedia",
     "status"
     ];
+
+    public function organization(){
+        return $this->hasMany("App\Organizations", "organizationId", "id");
+    }
 }

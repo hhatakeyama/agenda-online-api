@@ -12,4 +12,8 @@ class ServiceCategories extends Model
     "organizationId",
     "status",
     ];
+
+    public function organization(){
+        return $this->hasMany("App\Organizations", "organizationId", "id");
+    }
 }

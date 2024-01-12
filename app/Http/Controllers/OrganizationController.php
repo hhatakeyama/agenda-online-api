@@ -17,12 +17,20 @@ class OrganizationController extends Controller
         ], 200);
     }
 
-    public function getById(Organizations $organization)
+    public function getById($id)
     {
-        Log::info("Searching organization id", [$organization]);
-        return response()->json([
-            "data" => $organization
-        ], 200);
+        try {
+            $organization = Organizations::findOrFail($id);
+            Log::info("Searching organization id $id");
+            return response()->json([
+                "data" => $organization
+            ], 200);
+        } catch(\Exception $e) {
+            Log::error("Error searching organization", [$id]);
+            return response()->json([
+                "message" => "Empresa não encontrada.",
+            ], 400);
+        }
     }
 
     public function create(Request $request)
@@ -58,17 +66,19 @@ class OrganizationController extends Controller
         }
     }
 
-    public function delete(Organizations $organization)
+    public function delete($id)
      {
-        Log::info("Inativation of the organization $organization");
-        $organization->status = false;
-        if($organization->save()) {
+        try {
+            $organization = Organizations::findOrFail($id);        
+            Log::info("Inativation of the organization $id");
+            $organization->status = false;
+            $organization->save();
             Log::info("Organization inactivated successfully");
             return response()->json([
                 "message" => "Empresa inativada com sucesso.",
             ], 200);
-        } else {
-            Log::error("Error inativation of the organization $organization");
+        } catch(\Exception $e) {
+            Log::error("Error inativation of the organization $id");
             return response()->json([
                 "message" => "Erro ao inativar empresa. Entre em contato com o administrador do site.",
             ], 400);
