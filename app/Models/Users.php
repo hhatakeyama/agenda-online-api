@@ -24,7 +24,7 @@ class Users extends Authenticatable
         'email',
         'password',
         'type',
-        'organizationId',
+        'organization_id',
     ];
 
     /**

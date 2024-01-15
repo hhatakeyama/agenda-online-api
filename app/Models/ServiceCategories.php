@@ -9,11 +9,11 @@ class ServiceCategories extends Model
 {
     protected $fillable = [
     "name",
-    "organizationId",
+    "organization_id",
     "status",
     ];
 
     public function organization(){
-        return $this->hasMany("App\Organizations", "organizationId", "id");
+        return $this->hasMany("App\Organizations", "organization_id", "id");
     }
 }

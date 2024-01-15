@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ServiceCategoryController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\CityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +23,10 @@ use App\Http\Controllers\ClientController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+    
+    Route::get('states', [StateController::class, 'get']);
+    Route::get('citys', [CityController::class, 'get']);
+
     Route::prefix('painel')->group(function () {
         Route::prefix('organizations')->group(function () {
             Route::get('/', [OrganizationController::class, 'get']);

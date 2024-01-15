@@ -11,7 +11,7 @@ class OrganizationController extends Controller
     public function get()
     {
         Log::info("Searching all organizations");
-        $organizations = Organizations::all();
+        $organizations = Organizations::paginate(10);
         return response()->json([
             "data" => $organizations
         ], 200);
@@ -36,6 +36,11 @@ class OrganizationController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating organization");
+        $validated = $request->validate([
+            'registeredName' => 'required|max:255',
+            'tradingName' => 'required|max:255',
+            'cnpj' => 'required|max:20',
+        ]);
         $organizations = Organizations::create($request->all());
         if($organizations->save()) {
             Log::info("Organization created", [$organizations]);

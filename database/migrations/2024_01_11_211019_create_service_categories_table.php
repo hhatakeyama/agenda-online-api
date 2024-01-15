@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('service_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('organizationId');
+            $table->unsignedBigInteger('organization_id');
             $table->boolean('status')->default(true);
             $table->timestamps();
+            $table->foreign('organization_id')->references('id')->on('organizations');
         });
     }
 

@@ -11,7 +11,7 @@ class ServiceController extends Controller
     public function get()
     {
         Log::info("Searching all services");
-        $services = Services::all();
+        $services = Services::paginate(10);;
         return response()->json([
             "data" => $services
         ], 200);
@@ -36,6 +36,14 @@ class ServiceController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating service");
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'description' => 'required|max:255',
+            'price' => 'required',
+            'duration' => 'required',
+            'serviceCategoryId' => 'required|integer',
+            'organization_id' => 'required|integer',
+        ]);
         $services = Services::create($request->all());
         if($services->save()) {
             Log::info("Service created", [$services]);

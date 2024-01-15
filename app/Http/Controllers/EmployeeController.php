@@ -11,7 +11,7 @@ class EmployeeController extends Controller
     public function get()
     {
         Log::info("Searching all employees");
-        $employees = Users::all();
+        $employees = Users::paginate(10);;
         return response()->json([
             "data" => $employees
         ], 200);
@@ -36,6 +36,14 @@ class EmployeeController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating employee");
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'occupation' => 'required|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'required|max:255',
+            'type' => 'required',
+            'organization_id' => 'required|integer',
+        ]);
         $employees = Users::create($request->all());
         if($employees->save()) {
             Log::info("Employee created", [$employees]);

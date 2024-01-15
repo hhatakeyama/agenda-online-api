@@ -15,8 +15,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             organization::class,
             serviceCategory::class,
-            // company::class,
-            // service::class,
+            states::class,
+            citys::class,
         ]);
     }
 }

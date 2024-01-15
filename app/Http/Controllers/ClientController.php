@@ -11,7 +11,7 @@ class ClientController extends Controller
   public function get()
     {
         Log::info("Searching all clients");
-        $clients = Clients::all();
+        $clients = Clients::paginate(10);;
         return response()->json([
             "data" => $clients
         ], 200);
@@ -36,12 +36,16 @@ class ClientController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating client");
-        $uuid = Str::uuid('id')->toString();
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|max:255',
+            'password' => 'required|max:255',
+        ]);
         $clients = Clients::create($request->all());
         if($clients->save()) {
             Log::info("Client created", [$clients]);
             return response()->json([
-                "message" => "Cliente criada com sucesso",
+                "message" => "Cliente criado com sucesso",
             ], 200);
         } else {
             Log::error("Error create client", [$request]);

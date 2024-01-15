@@ -20,13 +20,14 @@ return new class extends Migration
             $table->string('city');
             $table->string('state');
             $table->string('thumb');
-            $table->string('organizationId');
+            $table->unsignedBigInteger('organization_id');
             $table->string('phone');
             $table->string('mobilePhone');
             $table->string('email');
             $table->string('socialMedia');
             $table->boolean('status')->default(true);
             $table->timestamps();
+            $table->foreign('organization_id')->references('id')->on('organizations');
         });
     }
 

@@ -15,7 +15,7 @@ class Companies extends Model
     "city",
     "state",
     "thumb",
-    "organizationId",
+    "organization_id",
     "phone",
     "mobilePhone",
     "email",
@@ -24,6 +24,6 @@ class Companies extends Model
     ];
 
     public function organization(){
-        return $this->hasMany("App\Organizations", "organizationId", "id");
+        return $this->hasMany("App\Organizations", "organization_id", "id");
     }
 }

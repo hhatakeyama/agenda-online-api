@@ -11,7 +11,7 @@ class ServiceCategoryController extends Controller
     public function get()
         {
             Log::info("Searching all categories");
-            $categorias = ServiceCategories::all();
+            $categorias = ServiceCategories::paginate(10);;
             return response()->json([
                 "data" => $categorias
             ], 200);
@@ -36,6 +36,10 @@ class ServiceCategoryController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating category");
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'organization_id' => 'required|integer',
+        ]);
         $categorias = ServiceCategories::create($request->all());
         if($categorias->save()) {
             Log::info("Category created", [$categorias]);

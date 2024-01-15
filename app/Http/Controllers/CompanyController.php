@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Companies;
+use App\Models\DaysOfWeek_Company;
+use App\Models\Company_Employee;
 
 class CompanyController extends Controller
 {
     public function get()
     {
         Log::info("Searching all companies");
-        $companies = Companies::all();
+        $companies = Companies::paginate(10);;
         return response()->json([
             "data" => $companies
         ], 200);
@@ -36,10 +38,27 @@ class CompanyController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating company");
-        $uuid = Str::uuid('id')->toString();
-        $companies = Companies::create($request->all());
-        if($companies->save()) {
-            Log::info("Company created", [$companies]);
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'address' => 'required|max:255',
+            'district' => 'required|max:255',
+            'cep' => 'required|max:255',
+            'city' => 'required|max:255',
+            'state' => 'required|max:255',
+            'thumb' => 'required',
+            'organization_id' => 'required|integer',
+            'phone' => 'required|max:255',
+            'mobilePhone' => 'required|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'required|max:255',
+        ]);
+        $company = Companies::create($request->all());
+        if($company->save()) {
+            Log::info("Company created", [$company]);
+
+            $company->createDaysofWeek($request, $company->id)->createMany($request->input('daysOfWeek'));
+            $company->createEmployeesOfCompany($request, $company->id)->createMany($request->input('employees'));
+            
             return response()->json([
                 "message" => "Unidade criada com sucesso",
             ], 200);
@@ -48,6 +67,28 @@ class CompanyController extends Controller
             return response()->json([
                 "message" => "Erro ao criar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
             ], 400);
+        }
+    }
+
+    private function createDaysofWeek($request, $company_id)
+    {
+        $days_of_week = DaysOfWeek_Company::create($request->all());
+        $days_of_week->company_id = $company_id;
+        if($days_of_week->save()){
+            Log::info("Days of week's company created", [$days_of_week]);
+        } else {
+            Log::error("Error create days of week's company", [$request]);
+        }
+    }
+
+    private function createEmployeesOfCompany($request, $company_id)
+    {
+        $employees = Company_Employee::create($request->all());
+        $employees->company_id = $company_id;
+        if($employees->save()){
+            Log::info("Employee's company created", [$employees]);
+        } else {
+            Log::error("Error create employee's company", [$request]);
         }
     }
 

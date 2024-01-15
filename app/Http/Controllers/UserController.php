@@ -11,7 +11,7 @@ class UserController extends Controller
     public function get()
     {
         Log::info("Searching all users");
-        $users = Users::all();
+        $users = Users::paginate(10);;
         return response()->json([
             "data" => $users
         ], 200);
@@ -36,6 +36,13 @@ class UserController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating user");
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|max:255',
+            'password' => 'required',
+            'type' => 'required',
+            'organization_id' => 'required|integer',
+        ]);
         $users = Users::create($request->all());
         if($users->save()) {
             Log::info("user created", [$users]);

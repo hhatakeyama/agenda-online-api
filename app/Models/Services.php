@@ -10,7 +10,7 @@ class Services extends Model
     protected $fillable = [
         "name",
         "description",
-        "organizationId",
+        "organization_id",
         "serviceCategoryId",
         "price",
         "duration",
@@ -18,7 +18,7 @@ class Services extends Model
     ];
 
     public function organization(){
-        return $this->hasMany("App\Organizations", "organizationId", "id");
+        return $this->hasMany("App\Organizations", "organization_id", "id");
     }
 
     public function serviceCategory(){

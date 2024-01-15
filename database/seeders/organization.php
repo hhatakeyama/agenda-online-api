@@ -12,6 +12,8 @@ class organization extends Seeder
      */
     public function run(): void
     {
+        \DB::table('organizations')->delete();
+
         \DB::table('organizations')->insert([
             'registeredName' => 'Organization 1',
             'tradingName' => 'Organization 1',
