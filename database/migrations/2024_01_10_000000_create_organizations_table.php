@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('registeredName');
             $table->string('tradingName');
-            $table->string('cnpj')->max(20);
+            $table->string('cnpj')->max(20)->unique();
+            $table->string('slug')->unique();
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

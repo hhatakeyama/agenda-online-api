@@ -18,6 +18,7 @@ class organization extends Seeder
             'registeredName' => 'Organization 1',
             'tradingName' => 'Organization 1',
             'cnpj' => '8.8.8.8',
+            'slug' => 'organization1',
             'status' => true,
         ]);
     }

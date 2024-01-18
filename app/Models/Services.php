@@ -14,6 +14,10 @@ class Services extends Model
         "serviceCategoryId",
         "price",
         "duration",
+        'send_email',
+        'send_sms',
+        'email_message',
+        'sms_message',
         "status",
     ];
 

@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('days_of_week_company', function (Blueprint $table) {
             $table->id();
-            $table->string("day_of_week")->nullable();
+            $table->number("day_of_week")->enum(["0","1", "2", "3", "4", "5", "6"]);
             $table->string("start_time")->nullable();
             $table->string("end_time")->nullable();
             $table->string("start_time_2")->nullable();
             $table->string("end_time_2")->nullable();
+            $table->string("start_time_3")->nullable();
+            $table->string("end_time_3")->nullable();
+            $table->string("start_time_4")->nullable();
+            $table->string("end_time_4")->nullable();
             $table->unsignedBigInteger("company_id")->nullable();            
             $table->timestamps();
 

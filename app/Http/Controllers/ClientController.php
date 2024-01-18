@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Clients;
 
 class ClientController extends Controller
@@ -42,6 +43,7 @@ class ClientController extends Controller
             'password' => 'required|max:255',
         ]);
         $clients = Clients::create($request->all());
+        $clients->password = Hash::make($request->password);
         if($clients->save()) {
             Log::info("Client created", [$clients]);
             return response()->json([

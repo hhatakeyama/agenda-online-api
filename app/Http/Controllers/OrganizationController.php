@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Organizations;
+use App\Models\Companies;
 
 class OrganizationController extends Controller
 {
@@ -29,6 +30,22 @@ class OrganizationController extends Controller
             Log::error("Error searching organization", [$id]);
             return response()->json([
                 "message" => "Empresa não encontrada.",
+            ], 400);
+        }
+    }
+
+    public function getCompaniesFromOrganization($id){
+        try {
+            $organization = Organizations::findOrFail($id);
+            $organization->companies = Companies::where('organization_id', $id)->where('status', 1)->select('id', 'name')->get();
+            Log::info("Searching companies from organization id $id");
+            return response()->json([
+                "data" => $organization
+            ], 200);
+        } catch(\Exception $e) {
+            Log::error("Error searching companies from organization", [$id]);
+            return response()->json([
+                "message" => "Unidades não encontradas.",
             ], 400);
         }
     }
@@ -72,7 +89,7 @@ class OrganizationController extends Controller
     }
 
     public function delete($id)
-     {
+    {
         try {
             $organization = Organizations::findOrFail($id);        
             Log::info("Inativation of the organization $id");

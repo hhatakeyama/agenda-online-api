@@ -21,10 +21,10 @@ return new class extends Migration
             $table->string('state');
             $table->string('thumb');
             $table->unsignedBigInteger('organization_id');
-            $table->string('phone');
-            $table->string('mobilePhone');
             $table->string('email');
-            $table->string('socialMedia');
+            $table->string('phone');
+            $table->string('mobilePhone')->nullable();
+            $table->string('socialMedia')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');

@@ -27,6 +27,10 @@ class Users extends Authenticatable
         'organization_id',
     ];
 
+    public function company(){
+        return $this->belongsToMany("App\Models\Company_Employee", "employee_id", "id");
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -34,7 +38,6 @@ class Users extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**

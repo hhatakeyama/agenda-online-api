@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('scheduling', function (Blueprint $table) {
+        Schema::create('schedule', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("company_id")->nullable();   
-            $table->unsignedBigInteger("client_id")->nullable();
-            $table->string("date")->nullable();
-            $table->string("start_time")->nullable();
-            $table->string("end_time")->nullable();
-            $table->string("price")->nullable();
-            $table->string("duration")->nullable();
+            $table->unsignedBigInteger("company_id");   
+            $table->unsignedBigInteger("client_id");
+            $table->string("date");
             $table->timestamps();
             
             $table->foreign('company_id')->references('id')->on('companies');
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('scheduling');
+        Schema::dropIfExists('schedule');
     }
 };

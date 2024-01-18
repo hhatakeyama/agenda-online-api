@@ -35,7 +35,7 @@ class ServiceCategoryController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating category");
+        Log::info("Creating category", [$request]);
         $validated = $request->validate([
             'name' => 'required|max:255',
             'organization_id' => 'required|integer',

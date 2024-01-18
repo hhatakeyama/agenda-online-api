@@ -19,6 +19,10 @@ return new class extends Migration
             $table->unsignedBigInteger('serviceCategoryId');
             $table->decimal('price', 10, 2);
             $table->string('duration');
+            $table->boolean('send_email')->default(false);
+            $table->boolean('send_sms')->default(false);
+            $table->string('email_message')->nullable();
+            $table->string('sms_message')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');

@@ -13,6 +13,7 @@ class Clients extends Model
         'name',
         'email',
         'password',
+        'status',
     ];
 
     /**

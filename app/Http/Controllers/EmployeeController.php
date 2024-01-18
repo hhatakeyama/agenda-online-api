@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Users;
+use App\Models\Employee_Services;
 
 class EmployeeController extends Controller
 {
@@ -35,7 +37,7 @@ class EmployeeController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating employee");
+        Log::info("Creating employee", [$request]);
         $validated = $request->validate([
             'name' => 'required|max:255',
             'occupation' => 'required|max:255',
@@ -44,9 +46,13 @@ class EmployeeController extends Controller
             'type' => 'required',
             'organization_id' => 'required|integer',
         ]);
-        $employees = Users::create($request->all());
-        if($employees->save()) {
-            Log::info("Employee created", [$employees]);
+        $employee = Users::create($request->all());
+        $employee->password = Hash::make($request->password);
+        if($employee->save()) {
+            Log::info("Employee created", [$employee]);
+            foreach($request->services as $service_id) {
+                $this->createServicesEmployee($employee->id, $service_id);
+            }
             return response()->json([
                 "message" => "Funcionario criado com sucesso",
             ], 200);
@@ -55,6 +61,20 @@ class EmployeeController extends Controller
             return response()->json([
                 "message" => "Erro ao criar servico. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
             ], 400);
+        }
+    }
+
+    public function createServicesEmployee($employee_id, $service_id)
+    {
+        Log::info("Service's employee", [$service_id]);
+        $employee_service = Employee_Services::create([
+            'employee_id' => $employee_id,
+            'service_id' => $service_id,
+        ]);
+        if($employee_service->save()){
+            Log::info("Service's employee created", [$employee_service]);
+        } else {
+            Log::error("Error create service's employee", [$request]);
         }
     }
 

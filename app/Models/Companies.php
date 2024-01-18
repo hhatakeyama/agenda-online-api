@@ -24,6 +24,18 @@ class Companies extends Model
     ];
 
     public function organization(){
-        return $this->hasMany("App\Organizations", "organization_id", "id");
+        return $this->hasMany("App\Models\Organizations", "organization_id", "id");
+    }
+
+    public function companyEmployees(){
+        return $this->hasMany("App\Models\Company_Employee", "company_id", "id");
+    }
+
+    public function companyServices(){
+        return $this->hasMany("App\Models\Company_Services", "company_id", "id");
+    }
+
+    public function daysOfWeek(){
+        return $this->hasMany("App\Models\DaysOfWeek_Company", "company_id", "id");
     }
 }

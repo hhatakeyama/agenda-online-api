@@ -15,9 +15,16 @@ class serviceCategory extends Seeder
         \DB::table('service_categories')->delete();
         
         \DB::table('service_categories')->insert([
-            'name' => 'service category 1',
-            'organization_id' => '1',
-            'status' => true,
+            0 => [
+                'name' => 'service category 1',
+                'organization_id' => 1,
+                'status' => true,
+            ],
+            1 => [
+                'name' => 'service category 2',
+                'organization_id' => 1,
+                'status' => true,
+            ]            
         ]);
     }
 }

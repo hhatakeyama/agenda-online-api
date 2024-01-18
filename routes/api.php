@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ServiceCategoryController;
@@ -24,9 +25,12 @@ use App\Http\Controllers\CityController;
 |
 */
     
-    Route::get('states', [StateController::class, 'get']);
-    Route::get('citys', [CityController::class, 'get']);
+Route::post('login', [AuthController::class, 'login']);
 
+Route::get('states', [StateController::class, 'get']);
+Route::get('citys', [CityController::class, 'get']);
+
+Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::prefix('painel')->group(function () {
         Route::prefix('organizations')->group(function () {
             Route::get('/', [OrganizationController::class, 'get']);
@@ -66,6 +70,7 @@ use App\Http\Controllers\CityController;
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'get']);
             Route::get('{id}', [UserController::class, 'getById']);
+            Route::get('me', [UserController::class, 'me']);
             Route::post('create', [UserController::class, 'create']);
             Route::put('update/{user}', [UserController::class, 'update']);
             Route::put('delete/{id}', [UserController::class, 'delete']);
@@ -78,3 +83,14 @@ use App\Http\Controllers\CityController;
             Route::put('delete/{id}', [ClientController::class, 'delete']);
         });
     });
+    Route::post('logout', [AuthController::class, 'logout']);
+});
+
+Route::prefix('site')->group(function () {
+    Route::prefix('organizations')->group(function () {
+        Route::get('{id}', [OrganizationController::class, 'getCompaniesFromOrganization']);
+    });
+    Route::prefix('companies')->group(function () {
+        Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
+    });
+});

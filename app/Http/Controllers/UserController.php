@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Users;
 
 class UserController extends Controller
@@ -14,6 +15,14 @@ class UserController extends Controller
         $users = Users::paginate(10);;
         return response()->json([
             "data" => $users
+        ], 200);
+    }
+
+    public function me(Request $request)
+    {
+        Log::info("Searching me ", [$request]);
+        return response()->json([
+            'data' => $request->user()
         ], 200);
     }
 
@@ -44,6 +53,7 @@ class UserController extends Controller
             'organization_id' => 'required|integer',
         ]);
         $users = Users::create($request->all());
+        $users->password = Hash::make($request->password);
         if($users->save()) {
             Log::info("user created", [$users]);
             return response()->json([
