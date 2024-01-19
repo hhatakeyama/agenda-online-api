@@ -23,7 +23,7 @@ class CompanyController extends Controller
     public function getById($id)
     {
         try {
-            $company = Companies::findOrFail($id);
+            $company = Companies::with("companyEmployees.employee", "companyServices.service", "daysOfWeek", "city")->findOrFail($id);
             Log::info("Searching company id", [$company]);
             return response()->json([
                 "data" => $company
@@ -38,7 +38,7 @@ class CompanyController extends Controller
 
     public function getAllDataFromCompany($id) {
         try {
-            $company = Companies::with("companyEmployees.employee", "companyServices.service", "daysOfWeek")->findOrFail($id);
+            $company = Companies::with("companyEmployees.employee", "companyServices.service", "daysOfWeek", "city")->findOrFail($id);
 
             Log::info("Searching companies id", [$company]);
             return response()->json([

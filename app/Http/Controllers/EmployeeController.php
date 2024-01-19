@@ -37,29 +37,36 @@ class EmployeeController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating employee", [$request]);
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'occupation' => 'required|max:255',
-            'email' => 'required|email|max:255',
-            'password' => 'required|max:255',
-            'type' => 'required',
-            'organization_id' => 'required|integer',
-        ]);
-        $employee = Users::create($request->all());
-        $employee->password = Hash::make($request->password);
-        if($employee->save()) {
-            Log::info("Employee created", [$employee]);
-            foreach($request->services as $service_id) {
-                $this->createServicesEmployee($employee->id, $service_id);
+        if($request->user()->type !== 'f') {
+            Log::info("Creating employee", [$request]);
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'occupation' => 'required|max:255',
+                'email' => 'required|email|max:255',
+                'password' => 'required|max:255',
+                'type' => 'required',
+                'organization_id' => 'required|integer',
+            ]);
+            $employee = Users::create($request->all());
+            $employee->password = Hash::make($request->password);
+            if($employee->save()) {
+                Log::info("Employee created", [$employee]);
+                foreach($request->services as $service_id) {
+                    $this->createServicesEmployee($employee->id, $service_id);
+                }
+                return response()->json([
+                    "message" => "Funcionario criado com sucesso",
+                ], 200);
+            } else {
+                Log::error("Error create employee", [$request]);
+                return response()->json([
+                    "message" => "Erro ao criar servico. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
             }
-            return response()->json([
-                "message" => "Funcionario criado com sucesso",
-            ], 200);
         } else {
-            Log::error("Error create employee", [$request]);
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Erro ao criar servico. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                "message" => "Você não tem permissão para criar um funcionario.",
             ], 400);
         }
     }
@@ -96,20 +103,27 @@ class EmployeeController extends Controller
 
     public function delete($id)
     {
-        try {
-            $employee = Users::findOrFail($id);  
-            Log::info("Inativation of the employee $employee");
-            $employee->status = false;
-            $employee->save();
-            Log::info("Employee inactivated successfully");
+        if($request->user()->type !== 'f') {
+            try {
+                $employee = Users::findOrFail($id);  
+                Log::info("Inativation of the employee $employee");
+                $employee->status = false;
+                $employee->save();
+                Log::info("Employee inactivated successfully");
+                return response()->json([
+                    "message" => "Funcionario inativado com sucesso.",
+                ], 200);
+            } catch(\Exception $e) {
+                Log::error("Error inativation of the employee $id");
+                return response()->json([
+                    "message" => "Erro ao inativar funcionario. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::info("Error updating employee", [$request]);
             return response()->json([
-                "message" => "Funcionario inativado com sucesso.",
-            ], 200);
-        } catch(\Exception $e) {
-            Log::error("Error inativation of the employee $id");
-            return response()->json([
-                "message" => "Erro ao inativar funcionario. Entre em contato com o administrador do site.",
-            ], 400);
+                "message" => "Erro ao atualizar funcionario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+            ], 400);        
         }
     }
 }

@@ -82,6 +82,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::put('update/{client}', [ClientController::class, 'update']);
             Route::put('delete/{id}', [ClientController::class, 'delete']);
         });
+        Route::prefix('schedules')->group(function () {
+            Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
+            Route::post('create', [ClientController::class, 'create']); // all
+            Route::put('update/{client}', [ClientController::class, 'update']);//u
+            Route::put('delete/{id}', [ClientController::class, 'delete']); // u
+        });
     });
     Route::post('logout', [AuthController::class, 'logout']);
 });

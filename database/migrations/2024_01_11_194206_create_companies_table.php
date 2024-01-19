@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('address');
             $table->string('district');
             $table->string('cep');
-            $table->string('city');
-            $table->string('state');
+            $table->string('city_id');
+            $table->string('state')->max(2);
             $table->string('thumb');
             $table->unsignedBigInteger('organization_id');
             $table->string('email');

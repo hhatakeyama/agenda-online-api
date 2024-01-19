@@ -38,4 +38,8 @@ class Companies extends Model
     public function daysOfWeek(){
         return $this->hasMany("App\Models\DaysOfWeek_Company", "company_id", "id");
     }
+
+    public function city(){
+        return $this->hasOne("App\Models\Cities", "id", "city_id");
+    }
 }

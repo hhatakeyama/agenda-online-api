@@ -22,4 +22,8 @@ class Schedule extends Model
     public function client(){
         return $this->belongsTo("App\Models\Clients");
     }
+
+    public function scheduleItems(){
+        return $this->hasMany("App\Models\Schedule_Item");
+    }
 }

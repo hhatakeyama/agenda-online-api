@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('schedule_itens', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("employee_id")->nullable();
             $table->unsignedBigInteger("schedule_id")->nullable();
+            $table->unsignedBigInteger("employee_id")->nullable();
             $table->unsignedBigInteger("service_id")->nullable();
             $table->string("start_time")->nullable();
             $table->string("end_time")->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->foreign('employee_id')->references('id')->on('users');
-            $table->foreign('schedule_id')->references('id')->on('scheduling');
+            $table->foreign('schedule_id')->references('id')->on('schedule');
             $table->foreign('service_id')->references('id')->on('company_services');
         });
     }
