@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CompanySeeder extends Seeder
@@ -21,13 +20,14 @@ class CompanySeeder extends Seeder
                 'address' => "doutor preciliano pinto",
                 'district' => "boa vista",
                 'cep' => "15025-080",
-                'city' => "sao jose do rio preto",
+                'city_id' => 3824,
                 'state' => "sp",
                 'thumb' => "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.riopreto.sp.gov.br%2Fportal%2Fnoticias%2",
                 'email' => 'sjrp@organization.com',
                 'organization_id' => 1,
                 'phone' => "(17) 3235-1234",
                 'mobilePhone' => "(17) 98235-1234",
+                'socialMedia' => '{"facebook": "https://facebook.com/", "twitter": "https://twitter.com/", "instagram": "https://instagram.com/"}',
             ],
             1 => [
                 'id' => 2,
@@ -35,12 +35,14 @@ class CompanySeeder extends Seeder
                 'address' => "santana do parnaiba",
                 'district' => "eldorado",
                 'cep' => "15025900",
-                'city' => "sao jose do rio preto",
+                'city_id' => 3824,
                 'state' => "sp",
                 'thumb' => "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.riopreto.sp.gov.br%2Fportal%2Fnoticias%2",
+                'email' => 'sjrp@organization.com',
                 'organization_id' => 1,
                 'phone' => "(17) 3235-1234",
                 'mobilePhone' => "(17) 98235-1234",
+                'socialMedia' => '{"facebook": "https://facebook.com/", "twitter": "https://twitter.com/", "instagram": "https://instagram.com/"}',
             ]
         ]);
     }

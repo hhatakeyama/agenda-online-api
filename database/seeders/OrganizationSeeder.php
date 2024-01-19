@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class organization extends Seeder
+class OrganizationSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,10 +14,10 @@ class organization extends Seeder
         \DB::table('organizations')->delete();
 
         \DB::table('organizations')->insert([
-            'registeredName' => 'Organization 1',
+            'registeredName' => 'Organization 1 Ltda',
             'tradingName' => 'Organization 1',
-            'cnpj' => '8.8.8.8',
-            'slug' => 'organization1',
+            'cnpj' => '12.345.678/0001-90',
+            'slug' => 'organization-1',
             'status' => true,
         ]);
     }

@@ -51,7 +51,7 @@ class OrganizationController extends Controller
     public function getCompaniesFromOrganization(Request $request)
     {
         try {
-            $organization = Organizations::findOrFail($id);
+            $organization = Organizations::findOrFail($request->id);
             $organization->companies = Companies::where('organization_id', $request->id)->where('status', 1)->select('id', 'name')->get();
             Log::info("Searching companies from organization id", [$request->id]);
             return response()->json([

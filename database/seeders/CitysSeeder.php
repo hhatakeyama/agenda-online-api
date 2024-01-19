@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class citys extends Seeder
+class CitysSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -7227,7 +7226,7 @@ class citys extends Seeder
             array (
                 'id' => 656,
                 'state_id' => 'MA',
-                'name' => 'Testado_idilândia',
+                'name' => 'Tstate_idilândia',
                 'path' => 'testadoidilandia',
                 'priority' => 10,
                 'created_at' => NULL,
@@ -13489,7 +13488,7 @@ class citys extends Seeder
                 'id' => 1225,
                 'state_id' => 'RN',
                 'name' => 'Severiano Melo',
-                'path' => 'severianomelo',
+                'path' => 'severianamelo',
                 'priority' => 10,
                 'created_at' => NULL,
                 'updated_at' => '2018-07-23 19:00:56',
@@ -49879,7 +49878,7 @@ class citys extends Seeder
             array (
                 'id' => 4532,
                 'state_id' => 'SC',
-                'name' => 'Rio Restado_idino',
+                'name' => 'Rio Rstate_idino',
                 'path' => 'riorestadoidino',
                 'priority' => 10,
                 'created_at' => NULL,

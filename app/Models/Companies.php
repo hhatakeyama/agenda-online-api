@@ -40,6 +40,6 @@ class Companies extends Model
     }
 
     public function city(){
-        return $this->hasOne("App\Models\Cities", "id", "city_id");
+        return $this->hasOne("App\Models\Citys", "id", "city_id");
     }
 }
