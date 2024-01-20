@@ -10,9 +10,10 @@ class ScheduleItem extends Model
         "schedule_id",
         "service_id",
         "employee_id",
-        "date",
         "start_time",
         "end_time",
+        "price",
+        "duration",
     ];
 
     public function schedule(){
