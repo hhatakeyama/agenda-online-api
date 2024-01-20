@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Users extends Authenticatable
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -27,8 +27,8 @@ class Users extends Authenticatable
         'organization_id',
     ];
 
-    public function company(){
-        return $this->belongsToMany("App\Models\Company_Employee", "employee_id", "id");
+    public function companyEmployees(){
+        return $this->belongsToMany("App\Models\CompanyEmployee", "employee_id", "id");
     }
 
     /**

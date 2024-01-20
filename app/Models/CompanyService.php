@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Company_Services extends Model
+class CompanyService extends Model
 {
-    use HasFactory;
     protected $table = 'company_services';
 
     protected $fillable = [
@@ -21,12 +19,13 @@ class Company_Services extends Model
         "email_message",
         "sms_message",
     ];
-
+    
     public function company(){
-        return $this->belongsTo("App\Models\Companies");
+        return $this->belongsTo("App\Models\Company");
     }
 
     public function service(){
-        return $this->belongsTo("App\Models\Services");
+        return $this->belongsTo("App\Models\Service");
     }
+
 }

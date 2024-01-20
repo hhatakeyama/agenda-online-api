@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UsersSeeder extends Seeder
 {
@@ -12,9 +13,9 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('users')->delete();
+        DB::table('users')->delete();
 
-        \DB::table('users')->insert([
+        DB::table('users')->insert([
             0 => [
                 'id' => 1,
                 'name' => 'admin',

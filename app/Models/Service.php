@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Services extends Model
+class Service extends Model
 {
     protected $fillable = [
         "name",
         "description",
         "organization_id",
-        "serviceCategoryId",
+        "serviceCategory_id",
         "price",
         "duration",
         'send_email',
@@ -22,10 +22,10 @@ class Services extends Model
     ];
 
     public function organization(){
-        return $this->hasMany("App\Organizations", "organization_id", "id");
+        return $this->belongsTo("App\Models\Organization", "organization_id", "id");
     }
 
     public function serviceCategory(){
-        return $this->hasMany("App\Services", "serviceCategoryId", "id");
+        return $this->hasOne("App\Models\ServiceCategory", "id", "serviceCategory_id");
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class StatesSeeder extends Seeder
 {
@@ -11,9 +12,9 @@ class StatesSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('states')->delete();
+        DB::table('states')->delete();
 
-        \DB::table('states')->insert(array (
+        DB::table('states')->insert(array (
             0 => 
             array (
                 'id' => 'AC',

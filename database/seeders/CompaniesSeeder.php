@@ -3,17 +3,18 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-class CompanySeeder extends Seeder
+class CompaniesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        \DB::table('companies')->delete();
+        DB::table('companies')->delete();
 
-        \DB::table('companies')->insert([
+        DB::table('companies')->insert([
             0 => [
                 'id' => 1,
                 'name' => "sjrp",

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeServicesSeeder extends Seeder
 {
@@ -12,9 +12,9 @@ class EmployeeServicesSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('employee_services')->delete();
+        DB::table('employee_services')->delete();
 
-        \DB::table('employee_services')->insert([
+        DB::table('employee_services')->insert([
             0 => [
                 'id' => 1,
                 'employee_id' => 1,

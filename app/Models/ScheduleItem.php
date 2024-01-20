@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Schedule_Item extends Model
+class ScheduleItem extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         "schedule_id",
         "service_id",
@@ -23,10 +20,10 @@ class Schedule_Item extends Model
     }
 
     public function service(){
-        return $this->belongsTo("App\Models\Services");
+        return $this->belongsTo("App\Models\Service");
     }
 
     public function employee(){
-        return $this->belongsTo("App\Models\Employees");
+        return $this->belongsTo("App\Models\User");
     }
 }

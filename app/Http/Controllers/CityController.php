@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\Citys;
+use App\Models\City;
 
 class CityController extends Controller
 
 {
     public function get()
     {
-        Log::info("Searching all citys");
-        $citys = Citys::all();
+        Log::info("Searching all cities");
+        $cities = City::all();
         return response()->json([
-            "data" => $citys
+            "data" => $cities
         ], 200);
     }
 }

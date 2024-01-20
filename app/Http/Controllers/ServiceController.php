@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\Services;
+use App\Models\Service;
 
 class ServiceController extends Controller
 {
     public function get()
     {
         Log::info("Searching all services");
-        $services = Services::paginate(10);;
+        $services = Service::paginate(10);;
         return response()->json([
             "data" => $services
         ], 200);
@@ -20,7 +20,7 @@ class ServiceController extends Controller
     public function getById($id)
     {
         try {
-            $service = Services::findOrFail($id);
+            $service = Service::findOrFail($id);
             Log::info("Searching service id", [$service]);
             return response()->json([
                 "data" => $service
@@ -41,10 +41,10 @@ class ServiceController extends Controller
             'description' => 'required|max:255',
             'price' => 'required',
             'duration' => 'required',
-            'serviceCategoryId' => 'required|integer',
+            'serviceCategory_id' => 'required|integer',
             'organization_id' => 'required|integer',
         ]);
-        $services = Services::create($request->all());
+        $services = Service::create($request->all());
         if($services->save()) {
             Log::info("Service created", [$services]);
             return response()->json([
@@ -58,7 +58,7 @@ class ServiceController extends Controller
         }
     }
 
-    public function update(Request $request, Services $service)
+    public function update(Request $request, Service $service)
     {
         Log::info("Updating service", [$request->id]);
         $service->update($request->all());
@@ -77,8 +77,8 @@ class ServiceController extends Controller
     public function delete($id)
      {
         try {
-            $service = Services::findOrFail($id); 
-            Log::info("Inativation of the service $service");
+            $service = Service::findOrFail($id); 
+            Log::info("Inativation of the service", [$service]);
             $service->status = false;
             $service->save();
             Log::info("Service inactivated successfully");

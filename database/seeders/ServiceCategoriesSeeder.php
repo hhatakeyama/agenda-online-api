@@ -3,17 +3,18 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-class ServiceCategorySeeder extends Seeder
+class ServiceCategoriesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        \DB::table('service_categories')->delete();
+        DB::table('service_categories')->delete();
         
-        \DB::table('service_categories')->insert([
+        DB::table('service_categories')->insert([
             0 => [
                 'name' => 'service category 1',
                 'organization_id' => 1,

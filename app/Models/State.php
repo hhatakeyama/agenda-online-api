@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class States extends Model
+class State extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         "name",
         "region",
         "ibge_id",
     ];
+    
+    public function cities(){
+        return $this->hasMany("App\Models\City", "state_id", "name");
+    }
 }

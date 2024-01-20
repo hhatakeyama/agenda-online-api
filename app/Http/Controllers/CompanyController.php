@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\Companies;
-use App\Models\DaysOfWeek_Company;
-use App\Models\Company_Employee;
-use App\Models\Company_Services;
+use App\Models\Company;
+use App\Models\CompanyDaysOfWeek;
+use App\Models\CompanyEmployee;
+use App\Models\CompanyService;
 
 class CompanyController extends Controller
 {
     public function get()
     {
         Log::info("Searching all companies");
-        $companies = Companies::paginate(10);;
+        $companies = Company::paginate(10);;
         return response()->json([
             "data" => $companies
         ], 200);
@@ -23,13 +23,13 @@ class CompanyController extends Controller
     public function getById($id)
     {
         try {
-            $company = Companies::with("companyEmployees.employee", "companyServices.service", "daysOfWeek", "city")->findOrFail($id);
+            $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")->findOrFail($id);
             Log::info("Searching company id", [$company]);
             return response()->json([
                 "data" => $company
             ], 200);
         } catch(\Exception $e) {
-            Log::info("Company not found", [$id]);
+            Log::info("Company not found", [$id, $e->getMessage()]);
             return response()->json([
                 "message" => "Unidade não encontrada."
             ], 200);
@@ -38,7 +38,7 @@ class CompanyController extends Controller
 
     public function getAllDataFromCompany($id) {
         try {
-            $company = Companies::with("companyEmployees.employee", "companyServices.service", "daysOfWeek", "city")->findOrFail($id);
+            $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")->findOrFail($id);
 
             Log::info("Searching companies id", [$company]);
             return response()->json([
@@ -54,20 +54,20 @@ class CompanyController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating company", [$request]);
+        Log::info("Creating company");
         $validated = $request->validate([
             'name' => 'required|max:255',
             'address' => 'required|max:255',
             'district' => 'required|max:255',
             'cep' => 'required|max:255',
-            'city' => 'required|max:255',
+            'city_id' => 'required|max:255',
             'state' => 'required|max:255',
             'thumb' => 'required',
             'organization_id' => 'required|integer',
             'phone' => 'required|max:255',
             'mobilePhone' => 'required|max:255',
         ]);
-        $company = Companies::create($request->all());
+        $company = Company::create($request->all());
         if($company->save()) {
             Log::info("Company created");
 
@@ -103,7 +103,7 @@ class CompanyController extends Controller
     private function createDaysofWeek($company_id, $dayOfWeek)
     {
         Log::info("Days of week's company", [$dayOfWeek]);
-        $day_of_week = DaysOfWeek_Company::create([
+        $day_of_week = CompanyDaysOfWeek::create([
             'day_of_week' => $dayOfWeek['day_of_week'],
             'company_id' => $company_id,
             'start_time' => $dayOfWeek['start_time'],
@@ -126,7 +126,7 @@ class CompanyController extends Controller
     private function createServiceCompany($company_id, $service)
     {
         Log::info("Service's company", [$service]);
-        $newService = Company_Services::create([
+        $newService = CompanyService::create([
             'company_id' => $company_id,
             'service_id' => $service['service_id'],
             'price' => $service['price'],
@@ -147,7 +147,7 @@ class CompanyController extends Controller
     private function createEmployeesOfCompany($company_id, $employee_id)
     {
         Log::info("Employee's company", [$employee_id]);
-        $employee = Company_Employee::create([
+        $employee = CompanyEmployee::create([
             'company_id' => $company_id,
             'employee_id' => $employee_id,
         ]);
@@ -159,7 +159,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function update(Request $request, Companies $company)
+    public function update(Request $request, Company $company)
     {
         Log::info("Updating company", [$request]);
         $company->update($request->all());
@@ -178,7 +178,7 @@ class CompanyController extends Controller
     public function delete($id)
     {
         try {
-            $company = Companies::findOrFail($id); 
+            $company = Company::findOrFail($id); 
             Log::info("Inativation of the company $company");
             $company->status = false;
             $company->save();

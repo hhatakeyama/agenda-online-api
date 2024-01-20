@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DaysOfWeek_Company extends Model
+class CompanyDaysOfWeek extends Model
 {
-    use HasFactory;
-    protected $table = 'days_of_week_company';
+    protected $table = 'company_days_of_weeks';
 
     protected $fillable = [
         "day_of_week",
@@ -24,6 +22,6 @@ class DaysOfWeek_Company extends Model
     ];
 
     public function company(){
-        return $this->belongsTo("App\Models\Companies");
+        return $this->belongsTo("App\Models\Company");
     }
 }

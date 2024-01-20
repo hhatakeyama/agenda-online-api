@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Schedule;
-use App\Models\Schedule_Item;
+use App\Models\ScheduleItem;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleController extends Controller
 {
     public function getSheduleFromEmployee($employee_id)
     {
-        $schedule = Schedule::with("scheduleItems", "client")->where("employee_id", $employee_id)::paginate(10)->get();
+        $schedule = Schedule::with("scheduleItems", "client")->where("employee_id", $employee_id)->paginate(10);
         return response()->json([
             "data" => $schedule
         ], 200);
@@ -18,7 +19,7 @@ class ScheduleController extends Controller
 
     public function getSheduleFromCliente($client_id)
     {
-        $schedule = Schedule::with("scheduleItems.employee")->where("client_id", $client_id)::paginate(10)->get();
+        $schedule = Schedule::with("scheduleItems.employee")->where("client_id", $client_id)->paginate(10);
         return response()->json([
             "message" => "Agenda do cliente"
         ], 200);
@@ -34,9 +35,9 @@ class ScheduleController extends Controller
             'date' => 'required',
         ]);
         $schedule = Schedule::create($request->all());
-        if($schedule->save()) {
-            if($request->services) {
-                foreach($request->services as $service) {
+        if ($schedule->save()) {
+            if ($request->services) {
+                foreach ($request->services as $service) {
                     $this->createScheduleItems($schedule->id, $service);
                 }
             }
@@ -56,8 +57,8 @@ class ScheduleController extends Controller
     private function createScheduleItems($schedule_id, $service)
     {
         Log::info("Update schedule item", [$service]);
-        $schedule_item = Schedule_Item::find($service->id);
-        $schedule_item = Schedule_Item::update([
+        $schedule_item = ScheduleItem::find($service->id);
+        $schedule_item->update([
             'schedule_id' => $schedule_id,
             'employee_id' => $service['employee_id'],
             'service_id' => $service['service_id'],
@@ -66,7 +67,7 @@ class ScheduleController extends Controller
             'price' => $service['price'],
             'duration' => $service["duration"],
         ]);
-        if($schedule_item->save()){
+        if ($schedule_item->save()) {
             Log::info("Schedule Item updated", [$schedule_item]);
         } else {
             Log::error("Error update schedule item", [$service]);
@@ -77,7 +78,7 @@ class ScheduleController extends Controller
     {
         $shedule = Schedule::find($request->id);
         $shedule->fill($request->all());
-        if($shedule->save()){
+        if ($shedule->save()) {
             Log::info("Schedule updated", [$shedule]);
             return response()->json([
                 "message" => "Agendamento atualizado"
@@ -90,27 +91,27 @@ class ScheduleController extends Controller
         }
     }
 
-    private function updateScheduleItems($schedule_id, $service)
+    private function updateScheduleItems($schedule_id, $schedule_item)
     {
-        Log::info("Schedule Item", [$service]);
+        Log::info("Schedule Item", [$schedule_item]);
 
-        if($newService->save()){
-            Log::info("Cchedule Item created", [$schedule_item]);
+        if ($schedule_item->save()) {
+            Log::info("Schedule Item created", [$schedule_item]);
         } else {
-            Log::error("Error create schedule item", [$service]);
+            Log::error("Error create schedule item", [$schedule_item]);
         }
     }
 
     public function delete(Request $request)
     {
-        $shedule = Schedule::find($request->id);
-        if($user->delete()){
-            Log::info("Schedule deleted", [$shedule]);
+        $schedule = Schedule::find($request->id);
+        if ($schedule->delete()) {
+            Log::info("Schedule deleted", [$schedule]);
             return response()->json([
                 "message" => "Agendamento deletado"
             ], 200);
         } else {
-            Log::error("Error delete schedule", [$shedule]);
+            Log::error("Error delete schedule", [$schedule]);
             return response()->json([
                 "message" => "Erro ao deletar agendamento"
             ], 400);

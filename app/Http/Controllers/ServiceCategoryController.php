@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\ServiceCategories;
+use App\Models\ServiceCategory;
 
 class ServiceCategoryController extends Controller
 {
     public function get()
     {
         Log::info("Searching all categories");
-        $categorias = ServiceCategories::paginate(10);;
+        $serviceCategorys = ServiceCategory::paginate(10);;
         return response()->json([
-            "data" => $categorias
+            "data" => $serviceCategorys
         ], 200);
     }
 
@@ -21,7 +21,7 @@ class ServiceCategoryController extends Controller
     {
         if($request->user()->type !== 'f') {
             try {
-                $serviceCategory = ServiceCategories::findOrFail($request->id);
+                $serviceCategory = ServiceCategory::findOrFail($request->id);
                 Log::info("Searching category id $serviceCategory");
                 return response()->json([
                     "data" => $serviceCategory
@@ -48,9 +48,9 @@ class ServiceCategoryController extends Controller
                 'name' => 'required|max:255',
                 'organization_id' => 'required|integer',
             ]);
-            $categorias = ServiceCategories::create($request->all());
-            if($categorias->save()) {
-                Log::info("Category created", [$categorias]);
+            $serviceCategorys = ServiceCategory::create($request->all());
+            if($serviceCategorys->save()) {
+                Log::info("Category created", [$serviceCategorys]);
                 return response()->json([
                     "message" => "Categoria criada com sucesso",
                 ], 200);
@@ -68,12 +68,12 @@ class ServiceCategoryController extends Controller
         }
     }
 
-    public function update(Request $request, ServiceCategories $categoria)
+    public function update(Request $request, ServiceCategory $serviceCategory)
     {
         if($request->user()->type !== 'f') {
             Log::info("Updating categoria", [$request]);
-            $categoria->update($request->all());
-            if($categoria->save()) {
+            $serviceCategory->update($request->all());
+            if($serviceCategory->save()) {
                 return response()->json([
                     "message" => "Categoria atualizada com sucesso",
                 ], 200);
@@ -86,25 +86,25 @@ class ServiceCategoryController extends Controller
         } else {
             Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Você não tem permissão para criar uma empresa.",
+                "message" => "Você não tem permissão para criar uma categoria.",
             ], 400);
         }
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
         if($request->user()->type !== 'f') {
             try {
-                $categoria = ServiceCategories::findOrFail($id); 
-                Log::info("Inativation of the category $categoria");
-                $categoria->status = false;
-                $categoria->save();
+                $serviceCategory = ServiceCategory::findOrFail($id); 
+                Log::info("Inativation of the category $serviceCategory");
+                $serviceCategory->status = false;
+                $serviceCategory->save();
                 Log::info("Category inactivated successfully");
                 return response()->json([
                     "message" => "Categoria inativada com sucesso.",
                 ], 200);
             } catch(\Exception $e) {
-                Log::error("Error inativation of the categoria $categoria");
+                Log::error("Error inativation of the categoria", [$e->getMessage()]);
                 return response()->json([
                     "message" => "Erro ao inativar categoria. Entre em contato com o administrador do site.",
                 ], 400);

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('days_of_week_company', function (Blueprint $table) {
+        Schema::create('company_days_of_weeks', function (Blueprint $table) {
             $table->id();
-            $table->enum("day_of_week", ["0","1", "2", "3", "4", "5", "6"]);
+            $table->enum("day_of_week", ["0", "1", "2", "3", "4", "5", "6"]);
             $table->string("start_time")->nullable();
             $table->string("end_time")->nullable();
             $table->string("start_time_2")->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string("end_time_3")->nullable();
             $table->string("start_time_4")->nullable();
             $table->string("end_time_4")->nullable();
-            $table->unsignedBigInteger("company_id")->nullable();            
+            $table->unsignedBigInteger("company_id")->nullable();
             $table->timestamps();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('days_of_week_company');
+        Schema::dropIfExists('company_days_of_weeks');
     }
 };

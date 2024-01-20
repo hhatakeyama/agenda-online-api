@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Users;
-use App\Models\Employee_Services;
+use App\Models\User;
+use App\Models\EmployeeService;
 
 class EmployeeController extends Controller
 {
     public function get()
     {
         Log::info("Searching all employees");
-        $employees = Users::paginate(10);;
+        $employees = User::where("type", "f")->paginate(10);;
         return response()->json([
             "data" => $employees
         ], 200);
@@ -22,12 +22,12 @@ class EmployeeController extends Controller
     public function getById($id)
     {
         try {
-            $employee = Users::findOrFail($id);
+            $employee = User::where("type", "f")->findOrFail($id);
             Log::info("Searching employee id ", [$employee]);
             return response()->json([
                 "data" => $employee
             ], 200);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Log::info("Employee not found", [$id]);
             return response()->json([
                 "message" => "Funcionário não encontrado."
@@ -37,7 +37,7 @@ class EmployeeController extends Controller
 
     public function create(Request $request)
     {
-        if($request->user()->type !== 'f') {
+        if ($request->user()->type !== 'f') {
             Log::info("Creating employee", [$request]);
             $validated = $request->validate([
                 'name' => 'required|max:255',
@@ -47,11 +47,11 @@ class EmployeeController extends Controller
                 'type' => 'required',
                 'organization_id' => 'required|integer',
             ]);
-            $employee = Users::create($request->all());
+            $employee = User::create($request->all());
             $employee->password = Hash::make($request->password);
-            if($employee->save()) {
+            if ($employee->save()) {
                 Log::info("Employee created", [$employee]);
-                foreach($request->services as $service_id) {
+                foreach ($request->services as $service_id) {
                     $this->createServicesEmployee($employee->id, $service_id);
                 }
                 return response()->json([
@@ -74,22 +74,22 @@ class EmployeeController extends Controller
     public function createServicesEmployee($employee_id, $service_id)
     {
         Log::info("Service's employee", [$service_id]);
-        $employee_service = Employee_Services::create([
+        $employeeService = EmployeeService::create([
             'employee_id' => $employee_id,
             'service_id' => $service_id,
         ]);
-        if($employee_service->save()){
-            Log::info("Service's employee created", [$employee_service]);
+        if ($employeeService->save()) {
+            Log::info("Service's employee created", [$employeeService]);
         } else {
-            Log::error("Error create service's employee", [$request]);
+            Log::error("Error create service's employee", [$employee_id, $service_id]);
         }
     }
 
-    public function update(Request $request, Users $employee)
+    public function update(Request $request, User $employee)
     {
         Log::info("Updating employee", [$request->id]);
         $employee->update($request->all());
-        if($employee->save()) {
+        if ($employee->save()) {
             return response()->json([
                 "message" => "Funcionario atualizada com sucesso",
             ], 200);
@@ -101,11 +101,11 @@ class EmployeeController extends Controller
         }
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
-        if($request->user()->type !== 'f') {
+        if ($request->user()->type !== 'f') {
             try {
-                $employee = Users::findOrFail($id);  
+                $employee = User::where("type", "f")->findOrFail($id);
                 Log::info("Inativation of the employee $employee");
                 $employee->status = false;
                 $employee->save();
@@ -113,7 +113,7 @@ class EmployeeController extends Controller
                 return response()->json([
                     "message" => "Funcionario inativado com sucesso.",
                 ], 200);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 Log::error("Error inativation of the employee $id");
                 return response()->json([
                     "message" => "Erro ao inativar funcionario. Entre em contato com o administrador do site.",
@@ -123,7 +123,7 @@ class EmployeeController extends Controller
             Log::info("Error updating employee", [$request]);
             return response()->json([
                 "message" => "Erro ao atualizar funcionario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-            ], 400);        
+            ], 400);
         }
     }
 }

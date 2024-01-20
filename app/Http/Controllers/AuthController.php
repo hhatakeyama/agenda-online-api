@@ -8,14 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
-    {
+    public function login(Request $request){
         Log::info("request", [$request]);
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-        if(Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials)) {
             Log::info("user logged", [$request->email]);
             $request->user()->tokens()->where('name', $request->email)->delete();
             $token = $request->user()->createToken($request->email);
@@ -30,8 +29,7 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
-    {
+    public function logout(Request $request){
         $request->user()->currentAccessToken()->delete();
         return response()->json([
             'message' => 'Successfully logged out'

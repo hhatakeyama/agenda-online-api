@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->unsignedBigInteger('organization_id');
-            $table->unsignedBigInteger('serviceCategoryId');
+            $table->unsignedBigInteger('serviceCategory_id');
             $table->decimal('price', 10, 2);
             $table->string('duration');
             $table->boolean('send_email')->default(false);
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');
-            $table->foreign('serviceCategoryId')->references('id')->on('service_categories');
+            $table->foreign('serviceCategory_id')->references('id')->on('service_categories');
         });
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
@@ -24,11 +23,11 @@ use App\Http\Controllers\CityController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-    
+
 Route::post('login', [AuthController::class, 'login']);
 
 Route::get('states', [StateController::class, 'get']);
-Route::get('citys', [CityController::class, 'get']);
+Route::get('cities', [CityController::class, 'get']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::prefix('painel')->group(function () {
@@ -36,57 +35,57 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::get('/', [OrganizationController::class, 'get']);
             Route::get('{id}', [OrganizationController::class, 'getById']);
             Route::post('create', [OrganizationController::class, 'create']);
-            Route::put('update/{organization}', [OrganizationController::class, 'update']);
-            Route::put('delete/{id}', [OrganizationController::class, 'delete']);
+            Route::patch('update/{organization}', [OrganizationController::class, 'update']);
+            Route::delete('delete/{id}', [OrganizationController::class, 'delete']);
         });
         Route::prefix('companies')->group(function () {
             Route::get('/', [CompanyController::class, 'get']);
             Route::get('{id}', [CompanyController::class, 'getById']);
             Route::post('create', [CompanyController::class, 'create']);
-            Route::put('update/{company}', [CompanyController::class, 'update']);
-            Route::put('delete/{id}', [CompanyController::class, 'delete']);
+            Route::patch('update/{company}', [CompanyController::class, 'update']);
+            Route::delete('delete/{id}', [CompanyController::class, 'delete']);
         });
-        Route::prefix('serviceCategories')->group(function () {
+        Route::prefix('service-categories')->group(function () {
             Route::get('/', [ServiceCategoryController::class, 'get']);
             Route::get('{id}', [ServiceCategoryController::class, 'getById']);
             Route::post('create', [ServiceCategoryController::class, 'create']);
-            Route::put('update/{serviceCategory}', [ServiceCategoryController::class, 'update']);
-            Route::put('delete/{id}', [ServiceCategoryController::class, 'delete']);
+            Route::patch('update/{serviceCategory}', [ServiceCategoryController::class, 'update']);
+            Route::delete('delete/{id}', [ServiceCategoryController::class, 'delete']);
         });
         Route::prefix('services')->group(function () {
             Route::get('/', [ServiceController::class, 'get']);
             Route::get('{id}', [ServiceController::class, 'getById']);
             Route::post('create', [ServiceController::class, 'create']);
-            Route::put('update/{service}', [ServiceController::class, 'update']);
-            Route::put('delete/{id}', [ServiceController::class, 'delete']);
+            Route::patch('update/{service}', [ServiceController::class, 'update']);
+            Route::delete('delete/{id}', [ServiceController::class, 'delete']);
         });
         Route::prefix('employees')->group(function () {
             Route::get('/', [EmployeeController::class, 'get']);
             Route::get('{id}', [EmployeeController::class, 'getById']);
             Route::post('create', [EmployeeController::class, 'create']);
-            Route::put('update/{employee}', [EmployeeController::class, 'update']);
-            Route::put('delete/{id}', [EmployeeController::class, 'delete']);
+            Route::patch('update/{employee}', [EmployeeController::class, 'update']);
+            Route::delete('delete/{id}', [EmployeeController::class, 'delete']);
         });
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'get']);
-            Route::get('{id}', [UserController::class, 'getById']);
             Route::get('me', [UserController::class, 'me']);
+            Route::get('{id}', [UserController::class, 'getById']);
             Route::post('create', [UserController::class, 'create']);
-            Route::put('update/{user}', [UserController::class, 'update']);
-            Route::put('delete/{id}', [UserController::class, 'delete']);
+            Route::patch('update/{user}', [UserController::class, 'update']);
+            Route::delete('delete/{id}', [UserController::class, 'delete']);
         });
         Route::prefix('clients')->group(function () {
             Route::get('/', [ClientController::class, 'get']);
             Route::get('{id}', [ClientController::class, 'getById']);
             Route::post('create', [ClientController::class, 'create']);
-            Route::put('update/{client}', [ClientController::class, 'update']);
-            Route::put('delete/{id}', [ClientController::class, 'delete']);
+            Route::patch('update/{client}', [ClientController::class, 'update']);
+            Route::delete('delete/{id}', [ClientController::class, 'delete']);
         });
         Route::prefix('schedules')->group(function () {
             Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
-            Route::post('create', [ClientController::class, 'create']); // all
-            Route::put('update/{client}', [ClientController::class, 'update']);//u
-            Route::put('delete/{id}', [ClientController::class, 'delete']); // u
+            Route::post('create', [ClientController::class, 'create']);
+            Route::patch('update/{client}', [ClientController::class, 'update']);
+            Route::delete('delete/{id}', [ClientController::class, 'delete']);
         });
     });
     Route::post('logout', [AuthController::class, 'logout']);

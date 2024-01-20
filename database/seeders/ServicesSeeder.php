@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ServicesSeeder extends Seeder
 {
@@ -11,9 +12,9 @@ class ServicesSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('services')->delete();
+        DB::table('services')->delete();
         
-        \DB::table('services')->insert([
+        DB::table('services')->insert([
             0 => [
                 'name' => 'service 1',
                 'description' => 'description 1',
@@ -21,7 +22,7 @@ class ServicesSeeder extends Seeder
                 'duration' => '00:30',
                 'send_email' => 1,
                 'send_sms' => 1,
-                'serviceCategoryId' => 1,
+                'serviceCategory_id' => 1,
                 'organization_id' => 1,
                 'status' => true,
             ],
@@ -32,7 +33,7 @@ class ServicesSeeder extends Seeder
                 'duration' => '00:30',
                 'send_email' => 1,
                 'send_sms' => 1,
-                'serviceCategoryId' => 1,
+                'serviceCategory_id' => 1,
                 'organization_id' => 1,
                 'status' => true,
             ]            

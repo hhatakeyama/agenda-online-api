@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class CitysSeeder extends Seeder
+class CitiesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,9 +12,9 @@ class CitysSeeder extends Seeder
     public function run(): void
       {
         
-        \DB::table('citys')->delete();
+        \DB::table('cities')->delete();
         
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 1,
@@ -5516,7 +5516,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 2102804,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 501,
@@ -11018,7 +11018,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 2308104,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 1001,
@@ -16520,7 +16520,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 2603306,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 1501,
@@ -22022,7 +22022,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 2914505,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 2001,
@@ -27524,7 +27524,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 3122900,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 2501,
@@ -33026,7 +33026,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 3164431,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 3001,
@@ -38528,7 +38528,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 3520400,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 3501,
@@ -44030,7 +44030,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 4106555,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 4001,
@@ -49532,7 +49532,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 4212304,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 4501,
@@ -55034,7 +55034,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 4318499,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 5001,
@@ -60536,7 +60536,7 @@ class CitysSeeder extends Seeder
                 'ibge_id' => 5216007,
             ),
         ));
-        \DB::table('citys')->insert(array (
+        \DB::table('cities')->insert(array (
             0 => 
             array (
                 'id' => 5501,

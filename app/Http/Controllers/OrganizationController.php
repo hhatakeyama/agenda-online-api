@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\Organizations;
-use App\Models\Companies;
+use App\Models\Organization;
+use App\Models\Company;
 
 class OrganizationController extends Controller
 {
@@ -13,7 +13,7 @@ class OrganizationController extends Controller
     {
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             Log::info("Searching all organizations");
-            $organizations = Organizations::paginate(10);
+            $organizations = Organization::paginate(10);
             return response()->json([
                 "data" => $organizations
             ], 200);
@@ -29,7 +29,7 @@ class OrganizationController extends Controller
     {
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             try {
-                $organization = Organizations::findOrFail($request->id);
+                $organization = Organization::findOrFail($request->id);
                 Log::info("Searching organization id" [$request->id]);
                 return response()->json([
                     "data" => $organization
@@ -51,8 +51,8 @@ class OrganizationController extends Controller
     public function getCompaniesFromOrganization(Request $request)
     {
         try {
-            $organization = Organizations::findOrFail($request->id);
-            $organization->companies = Companies::where('organization_id', $request->id)->where('status', 1)->select('id', 'name')->get();
+            $organization = Organization::findOrFail($request->id);
+            $organization->companies = Company::where('organization_id', $request->id)->where('status', 1)->select('id', 'name')->get();
             Log::info("Searching companies from organization id", [$request->id]);
             return response()->json([
                 "data" => $organization
@@ -75,7 +75,7 @@ class OrganizationController extends Controller
                 'tradingName' => 'required|max:255',
                 'cnpj' => 'required|max:20',
             ]);
-            $organizations = Organizations::create($request->all());
+            $organizations = Organization::create($request->all());
             if($organizations->save()) {
                 Log::info("Organization created", [$organizations]);
                 return response()->json([
@@ -96,7 +96,7 @@ class OrganizationController extends Controller
             
     }
 
-    public function update(Request $request, Organizations $organization)
+    public function update(Request $request, Organization $organization)
     {
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             Log::info("Updating organization", [$request->id]);
@@ -123,7 +123,7 @@ class OrganizationController extends Controller
     {
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             try {
-                $organization = Organizations::findOrFail($request->id);        
+                $organization = Organization::findOrFail($request->id);        
                 Log::info("Inativation of the organization", [$request->id]);
                 $organization->status = false;
                 $organization->save();

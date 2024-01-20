@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Clients;
+use App\Models\Client;
 
 class ClientController extends Controller
 {
   public function get()
     {
         Log::info("Searching all clients");
-        $clients = Clients::paginate(10);;
+        $clients = Client::paginate(10);;
         return response()->json([
             "data" => $clients
         ], 200);
@@ -21,7 +21,7 @@ class ClientController extends Controller
     public function getById($id)
     {
         try {
-            $client = Clients::findOrFail($id);
+            $client = Client::findOrFail($id);
             Log::info("Searching client id", [$client]);
             return response()->json([
                 "data" => $client
@@ -42,7 +42,7 @@ class ClientController extends Controller
             'email' => 'required|max:255',
             'password' => 'required|max:255',
         ]);
-        $clients = Clients::create($request->all());
+        $clients = Client::create($request->all());
         $clients->password = Hash::make($request->password);
         if($clients->save()) {
             Log::info("Client created", [$clients]);
@@ -57,7 +57,7 @@ class ClientController extends Controller
         }
     }
 
-    public function update(Request $request, Clients $client)
+    public function update(Request $request, Client $client)
     {
         Log::info("Updating client", [$request]);
         $client->update($request->all());
@@ -76,7 +76,7 @@ class ClientController extends Controller
     public function delete($id)
     {
         try {
-            $client = Clients::findOrFail($id); 
+            $client = Client::findOrFail($id); 
             Log::info("Inativation of the client $client");
             $client->status = false;
             $client->save();

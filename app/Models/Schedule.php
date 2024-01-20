@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Schedule extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         "company_id",
         "client_id",
@@ -16,14 +13,14 @@ class Schedule extends Model
     ];
 
     public function company(){
-        return $this->belongsTo("App\Models\Companies");
+        return $this->belongsTo("App\Models\Company");
     }
 
     public function client(){
-        return $this->belongsTo("App\Models\Clients");
+        return $this->belongsTo("App\Models\Client");
     }
 
     public function scheduleItems(){
-        return $this->hasMany("App\Models\Schedule_Item");
+        return $this->hasMany("App\Models\ScheduleItem");
     }
 }
