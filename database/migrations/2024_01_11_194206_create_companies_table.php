@@ -24,7 +24,8 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone');
             $table->string('mobilePhone')->nullable();
-            $table->string('socialMedia')->nullable();
+            $table->longText('socialMedia')->nullable();
+            $table->longText('map')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');

@@ -12,7 +12,7 @@ class ClientController extends Controller
   public function get()
     {
         Log::info("Searching all clients");
-        $clients = Client::paginate(10);;
+        $clients = Client::paginate(10);
         return response()->json([
             "data" => $clients
         ], 200);

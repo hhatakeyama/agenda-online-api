@@ -11,7 +11,7 @@ class ServiceController extends Controller
     public function get()
     {
         Log::info("Searching all services");
-        $services = Service::paginate(10);;
+        $services = Service::paginate(10);
         return response()->json([
             "data" => $services
         ], 200);

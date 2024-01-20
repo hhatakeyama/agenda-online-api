@@ -13,7 +13,7 @@ class EmployeeController extends Controller
     public function get()
     {
         Log::info("Searching all employees");
-        $employees = User::where("type", "f")->paginate(10);;
+        $employees = User::where("type", "f")->paginate(10);
         return response()->json([
             "data" => $employees
         ], 200);

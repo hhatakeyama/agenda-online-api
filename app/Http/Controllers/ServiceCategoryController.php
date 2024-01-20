@@ -11,7 +11,7 @@ class ServiceCategoryController extends Controller
     public function get()
     {
         Log::info("Searching all categories");
-        $serviceCategorys = ServiceCategory::paginate(10);;
+        $serviceCategorys = ServiceCategory::paginate(10);
         return response()->json([
             "data" => $serviceCategorys
         ], 200);

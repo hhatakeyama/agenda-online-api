@@ -15,11 +15,20 @@ class OrganizationsSeeder extends Seeder
         DB::table('organizations')->delete();
 
         DB::table('organizations')->insert([
-            'registeredName' => 'Organization 1 Ltda',
-            'tradingName' => 'Organization 1',
-            'cnpj' => '12.345.678/0001-90',
-            'slug' => 'organization-1',
-            'status' => true,
+            0 => [
+                'registeredName' => 'Organization 1 Ltda',
+                'tradingName' => 'Organization 1',
+                'cnpj' => '12.345.678/0001-90',
+                'slug' => 'organization-1-ltda',
+                'status' => true,
+            ],
+            1 => [
+                'registeredName' => 'Organization 2 Ltda',
+                'tradingName' => 'Organization 2',
+                'cnpj' => '12.345.678/0001-91',
+                'slug' => 'organization-2-ltda',
+                'status' => true,
+            ],
         ]);
     }
 }

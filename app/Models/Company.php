@@ -19,6 +19,7 @@ class Company extends Model
         "mobilePhone",
         "email",
         "socialMedia",
+        "map",
         "status"
     ];
 
