@@ -19,7 +19,7 @@ class ServiceCategoryController extends Controller
 
     public function getById(Request $request)
     {
-        if($request->user()->type !== 'f') {
+        if($request->user()->type !== 'f') {//category belongs to organization
             try {
                 $serviceCategory = ServiceCategory::findOrFail($request->id);
                 Log::info("Searching category id $serviceCategory");

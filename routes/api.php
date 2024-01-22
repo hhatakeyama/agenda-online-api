@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,5 +98,8 @@ Route::prefix('site')->group(function () {
     });
     Route::prefix('companies')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
+    });
+    Route::prefix('scheduleFromEmployee')->group(function () {
+        Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
     });
 });

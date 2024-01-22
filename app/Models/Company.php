@@ -31,6 +31,10 @@ class Company extends Model
         return $this->hasMany("App\Models\CompanyEmployee", "company_id", "id");
     }
 
+    public function employeesService(){
+        return $this->hasMany("App\Models\EmployeeService", "service_id", "id");
+    }
+
     public function companyServices(){
         return $this->hasMany("App\Models\CompanyService", "company_id", "id");
     }

@@ -25,7 +25,6 @@ class CompanyService extends Model
     }
 
     public function service(){
-        return $this->belongsTo("App\Models\Service");
+        return $this->belongsTo("App\Models\Service", "id", "id");
     }
-
 }

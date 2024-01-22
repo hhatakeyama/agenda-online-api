@@ -25,6 +25,16 @@ class ScheduleController extends Controller
         ], 200);
     }
 
+    public function getSchedulesFromEmployeesBeginningToday($employee_id)
+    {
+        $schedule = Schedule::with("scheduleItems")->whereHas("scheduleItems", function ($query) use ($employee_id) {
+                $query->where("employee_id", $employee_id);
+            })->where("date", ">=", date("Y-m-d"))->get();
+        return response()->json([
+            "data" => $schedule
+        ], 200);
+    }
+
     public function create(Request $request)
     {
         Log::info("Creating schedule", [$request]);

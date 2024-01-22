@@ -12,17 +12,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CitiesSeeder::class,
-            CompanyDaysOfWeekSeeder::class,
-            CompanyEmployeesSeeder::class,
-            CompaniesSeeder::class,
-            CompanyServicesSeeder::class,
-            EmployeeServicesSeeder::class,
             OrganizationsSeeder::class,
+            CompaniesSeeder::class,
+            CompanyDaysOfWeekSeeder::class,
+            UsersSeeder::class,
             ServiceCategoriesSeeder::class,
             ServicesSeeder::class,
+            EmployeeServicesSeeder::class,
+            CompanyEmployeesSeeder::class,
+            CompanyServicesSeeder::class,
             StatesSeeder::class,
-            UsersSeeder::class,
+            CitiesSeeder::class,
         ]);
     }
 }

@@ -28,4 +28,8 @@ class Service extends Model
     public function serviceCategory(){
         return $this->hasOne("App\Models\ServiceCategory", "id", "serviceCategory_id");
     }
+
+    public function employeeServices(){
+        return $this->hasMany("App\Models\EmployeeService", "service_id", "id");
+    }
 }

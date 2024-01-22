@@ -27,7 +27,7 @@ class OrganizationController extends Controller
 
     public function getById(Request $request)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a') {
+        if($request->user()->type === 's' || $request->user()->type === 'a'|| $request->user()->type === 'g') {
             try {
                 $organization = Organization::findOrFail($request->id);
                 Log::info("Searching organization id" [$request->id]);
@@ -98,7 +98,7 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organization $organization)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a') {
+        if($request->user()->type === 's' || $request->user()->type === 'a' || $request->user()->type === 'g') {
             Log::info("Updating organization", [$request->id]);
             $organization->update($request->all());
             if($organization->save()) {

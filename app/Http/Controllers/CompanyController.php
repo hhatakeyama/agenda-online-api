@@ -39,6 +39,18 @@ class CompanyController extends Controller
     public function getAllDataFromCompany($id) {
         try {
             $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")->findOrFail($id);
+            $listServices = [];
+            foreach($company->companyServices as $service) {
+                $listEmployees = [];
+                foreach($service->service->employeeServices as $employee) {
+                    array_push($listEmployees, $employee->employee);
+                }
+                $service->service->employees = $listEmployees;
+                array_push($listServices, [
+                    "service_id" => $service->service_id,
+                    "employees" => $listEmployees
+                ]);                
+            }
 
             Log::info("Searching companies id", [$company]);
             return response()->json([

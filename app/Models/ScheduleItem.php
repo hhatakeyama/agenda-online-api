@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ScheduleItem extends Model
 {
+    protected $table = 'schedule_itens';
     protected $fillable = [
         "schedule_id",
         "service_id",
@@ -17,14 +18,14 @@ class ScheduleItem extends Model
     ];
 
     public function schedule(){
-        return $this->belongsTo("App\Models\Schedule");
+        return $this->belongsTo("App\Models\Schedule", "schedule_id", "id");
     }
 
     public function service(){
-        return $this->belongsTo("App\Models\Service");
+        return $this->belongsTo("App\Models\Service", "service_id", "id");
     }
 
     public function employee(){
-        return $this->belongsTo("App\Models\User");
+        return $this->belongsTo("App\Models\User", "employee_id", "id");
     }
 }

@@ -13,14 +13,14 @@ class Schedule extends Model
     ];
 
     public function company(){
-        return $this->belongsTo("App\Models\Company");
+        return $this->belongsTo("App\Models\Company", "company_id", "id");
     }
 
     public function client(){
-        return $this->belongsTo("App\Models\Client");
+        return $this->belongsTo("App\Models\Client", "client_id", "id");
     }
 
     public function scheduleItems(){
-        return $this->hasMany("App\Models\ScheduleItem");
+        return $this->hasMany("App\Models\ScheduleItem", "schedule_id", "id");
     }
 }
