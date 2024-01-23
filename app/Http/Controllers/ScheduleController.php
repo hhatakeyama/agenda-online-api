@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
+use Twilio\Rest\Client;
 
 class ScheduleController extends Controller
 {
@@ -126,5 +127,17 @@ class ScheduleController extends Controller
                 "message" => "Erro ao deletar agendamento"
             ], 400);
         }
+    }
+
+    public function sendMessage($recipient)
+    {
+        $recipient = "+55" . $recipient;
+        $message = "Olá, você tem um novo agendamento para o dia 23/01/2024 às 10:00. Confirme seu agendamento em: https://www.google.com.br";
+        $account_sid = getenv("TWILIO_SID");
+        $auth_token = getenv("TWILIO_AUTH_TOKEN");
+        $twilio_number = getenv("TWILIO_NUMBER");
+        $client = new Client($account_sid, $auth_token);
+        $client->messages->create($recipient, 
+                ['from' => $twilio_number, 'body' => $message] );
     }
 }

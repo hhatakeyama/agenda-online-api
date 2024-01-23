@@ -17,12 +17,22 @@ class EmployeeServicesSeeder extends Seeder
         DB::table('employee_services')->insert([
             0 => [
                 'id' => 1,
-                'employee_id' => 1,
+                'employee_id' => 2,
                 'service_id' => 1,
             ],
             1 => [
                 'id' => 2,
-                'employee_id' => 1,
+                'employee_id' => 2,
+                'service_id' => 2,
+            ],
+            2 => [
+                'id' => 3,
+                'employee_id' => 3,
+                'service_id' => 1,
+            ],
+            3 => [
+                'id' => 4,
+                'employee_id' => 3,
                 'service_id' => 2,
             ]
         ]);

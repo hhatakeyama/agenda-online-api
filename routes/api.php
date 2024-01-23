@@ -83,10 +83,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::delete('delete/{id}', [ClientController::class, 'delete']);
         });
         Route::prefix('schedules')->group(function () {
-            Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
-            Route::post('create', [ClientController::class, 'create']);
-            Route::patch('update/{client}', [ClientController::class, 'update']);
-            Route::delete('delete/{id}', [ClientController::class, 'delete']);
+            Route::get('employee/{employee_id}', [ScheduleController::class, 'getSheduleFromEmployee']);
+            Route::post('client//{client_id}', [ScheduleController::class, 'getSheduleFromCliente']);
+            Route::patch('create', [ScheduleController::class, 'create']);
+            Route::patch('update/{client}', [ScheduleController::class, 'update']);
+            Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
         });
     });
     Route::post('logout', [AuthController::class, 'logout']);
@@ -99,7 +100,10 @@ Route::prefix('site')->group(function () {
     Route::prefix('companies')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
     });
-    Route::prefix('scheduleFromEmployee')->group(function () {
+    Route::prefix('schedulesFromEmployee')->group(function () {
         Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
+    });
+    Route::prefix('schedules')->group(function () {
+        Route::get('sendSms/{recipient}', [ScheduleController::class, 'sendMessage']);
     });
 });

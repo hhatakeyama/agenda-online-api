@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             CompaniesSeeder::class,
             CompanyDaysOfWeekSeeder::class,
             UsersSeeder::class,
+            ClientsSeeder::class,
             ServiceCategoriesSeeder::class,
             ServicesSeeder::class,
             EmployeeServicesSeeder::class,
@@ -23,6 +24,9 @@ class DatabaseSeeder extends Seeder
             CompanyServicesSeeder::class,
             StatesSeeder::class,
             CitiesSeeder::class,
+            SchedulesSeeder::class,
+            ScheduleItemsSeeder::class,
+            
         ]);
     }
 }
