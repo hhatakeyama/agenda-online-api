@@ -12,9 +12,9 @@ class ScheduleItemsSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('schedule_itens')->delete();
+        DB::table('schedule_items')->delete();
         
-        DB::table('schedule_itens')->insert([
+        DB::table('schedule_items')->insert([
             0 => [
                 'schedule_id' => 1,
                 'employee_id' => 1,

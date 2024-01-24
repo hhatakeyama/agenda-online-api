@@ -29,8 +29,8 @@ class ScheduleController extends Controller
     public function getSchedulesFromEmployeesBeginningToday($employee_id)
     {
         $schedule = Schedule::with("scheduleItems")->whereHas("scheduleItems", function ($query) use ($employee_id) {
-                $query->where("employee_id", $employee_id);
-            })->where("date", ">=", date("Y-m-d"))->get();
+            $query->where("employee_id", $employee_id);
+        })->where("date", ">=", date("Y-m-d"))->get();
         return response()->json([
             "data" => $schedule
         ], 200);
@@ -137,7 +137,9 @@ class ScheduleController extends Controller
         $auth_token = getenv("TWILIO_AUTH_TOKEN");
         $twilio_number = getenv("TWILIO_NUMBER");
         $client = new Client($account_sid, $auth_token);
-        $client->messages->create($recipient, 
-                ['from' => $twilio_number, 'body' => $message] );
+        $client->messages->create(
+            $recipient,
+            ['from' => $twilio_number, 'body' => $message]
+        );
     }
 }
