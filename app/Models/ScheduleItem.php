@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ScheduleItem extends Model
 {
-    protected $table = 'schedule_itens';
+    protected $table = 'schedule_items';
     protected $fillable = [
         "schedule_id",
         "service_id",
