@@ -95,7 +95,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 Route::prefix('site')->group(function () {
     Route::prefix('organizations')->group(function () {
-        Route::get('{id}', [OrganizationController::class, 'getCompaniesFromOrganization']);
+        Route::get('{slug}', [OrganizationController::class, 'getCompaniesFromOrganization']);
     });
     Route::prefix('companies')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);

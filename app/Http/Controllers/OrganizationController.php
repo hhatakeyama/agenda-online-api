@@ -48,17 +48,17 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getCompaniesFromOrganization(Request $request)
+    public function getCompaniesFromOrganization($slug)
     {
         try {
-            $organization = Organization::findOrFail($request->id);
-            $organization->companies = Company::where('organization_id', $request->id)->where('status', 1)->select('id', 'name')->get();
-            Log::info("Searching companies from organization id", [$request->id]);
+            Log::info("Searching companies from organization id", [$slug]);
+            $organization = Organization::where('slug', $slug)->firstOrFail();
+            $organization->companies = Company::where('organization_id', $organization->id)->where('status', 1)->select('id', 'name')->get();
             return response()->json([
                 "data" => $organization
             ], 200);
         } catch(\Exception $e) {
-            Log::error("Error searching companies from organization", [$request->id]);
+            Log::error("Error searching companies from organization", [$slug]);
             return response()->json([
                 "message" => "Unidades não encontradas.",
             ], 400);
@@ -67,7 +67,6 @@ class OrganizationController extends Controller
 
     public function create(Request $request)
     {
-        Log::info($request->user()->type);
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             Log::info("Creating organization");
             $validated = $request->validate([

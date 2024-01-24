@@ -16,7 +16,8 @@ class ScheduleController extends Controller
         return response()->json([
             "data" => $schedule
         ], 200);
-    }
+    }//receive  date and company_id in the query and return shedule per employee
+
 
     public function getSheduleFromCliente($client_id)
     {
@@ -52,6 +53,7 @@ class ScheduleController extends Controller
                     $this->createScheduleItems($schedule->id, $service);
                 }
             }
+            $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
 
             Log::info("Schedule created", [$schedule]);
             return response()->json([

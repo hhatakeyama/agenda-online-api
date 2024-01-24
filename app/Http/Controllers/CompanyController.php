@@ -14,7 +14,7 @@ class CompanyController extends Controller
     public function get()
     {
         Log::info("Searching all companies");
-        $companies = Company::paginate(10);
+        $companies = Company::where("status", 1)->paginate(10);
         return response()->json([
             "data" => $companies
         ], 200);
