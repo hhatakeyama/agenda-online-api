@@ -10,6 +10,7 @@ class Service extends Model
     protected $fillable = [
         "name",
         "description",
+        "can_simultaneous",
         "organization_id",
         "serviceCategory_id",
         "price",

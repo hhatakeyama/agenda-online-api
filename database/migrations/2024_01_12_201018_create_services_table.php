@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('serviceCategory_id');
             $table->decimal('price', 10, 2);
             $table->string('duration');
+            $table->boolean('can_simultaneous')->default(false);
             $table->boolean('send_email')->default(false);
             $table->boolean('send_sms')->default(false);
             $table->string('email_message')->nullable();

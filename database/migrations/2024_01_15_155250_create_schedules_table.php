@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger("company_id");   
             $table->unsignedBigInteger("client_id");
+            $table->boolean('confirmed')->default(false);
+            $table->boolean('done')->default(false);
             $table->string("date");
             $table->timestamps();
             
