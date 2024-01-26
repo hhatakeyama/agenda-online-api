@@ -17,4 +17,13 @@ class CityController extends Controller
             "data" => $cities
         ], 200);
     }
+
+    public function getByStateId($state_id)
+    {
+        Log::info("Searching all cities");
+        $cities = City::where("state_id", $state_id)->get();
+        return response()->json([
+            "data" => $cities
+        ], 200);
+    }
 }

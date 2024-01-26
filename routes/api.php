@@ -27,9 +27,12 @@ use App\Http\Controllers\ScheduleController;
 
 Route::post('login', [AuthController::class, 'login']);
 
-Route::get('states', [StateController::class, 'get']);
+Route::prefix('states')->group(function () {
+    Route::get('/', [StateController::class, 'get']);
+    Route::get('/{state_id}/cities', [CityController::class, 'getByStateId']);
+});
 Route::get('cities', [CityController::class, 'get']);
-
+    
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::prefix('painel')->group(function () {
         Route::prefix('organizations')->group(function () {

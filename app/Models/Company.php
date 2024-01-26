@@ -23,8 +23,8 @@ class Company extends Model
         "status"
     ];
 
-    public function organizations(){
-        return $this->hasMany("App\Models\Organization", "organization_id", "id");
+    public function organization(){
+        return $this->belongsTo("App\Models\Organization", "organization_id", "id");
     }
 
     public function companyEmployees(){
