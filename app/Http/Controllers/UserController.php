@@ -87,7 +87,24 @@ class UserController extends Controller
             }
         }
         Log::info("Updating user", [$request->id]);
-        $user->update($request->all());
+        $emailFilled = $user->email != $request->email;
+        $validations = [
+            'name' => 'required|max:255',
+            'email' => 'required|max:255',
+            'type' => 'required',
+            'organization_id' => 'required|integer',
+        ];
+        if($emailFilled) {
+            $regras['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
+        }
+        if ($request->password) {
+            $validations['password'] = ['required', 'string', 'confirmed'];
+        }
+        $user->fill($request->all());
+        if ($request->password) {
+            $user->password = Hash::make($request->password);
+        }
+        $user->save();
         if($user->save()) {
             return response()->json([
                 "message" => "Usuario atualizado com sucesso",
