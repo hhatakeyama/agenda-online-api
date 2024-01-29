@@ -66,48 +66,56 @@ class CompanyController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating company");
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'address' => 'required|max:255',
-            'district' => 'required|max:255',
-            'cep' => 'required|max:255',
-            'city_id' => 'required|max:255',
-            'state' => 'required|max:255',
-            'thumb' => 'required',
-            'organization_id' => 'required|integer',
-            'phone' => 'required|max:255',
-            'mobilePhone' => 'required|max:255',
-        ]);
-        $company = Company::create($request->all());
-        if($company->save()) {
-            Log::info("Company created");
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            Log::info("Creating company");
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'address' => 'required|max:255',
+                'district' => 'required|max:255',
+                'cep' => 'required|max:255',
+                'city_id' => 'required|max:255',
+                'state' => 'required|max:255',
+                'thumb' => 'required',
+                'organization_id' => 'required|integer',
+                'phone' => 'required|max:255',
+                'mobilePhone' => 'required|max:255',
+            ]);
+            $company = Company::create($request->all());
+            if($company->save()) {
+                Log::info("Company created");
 
-            if($request->daysOfWeek) {
-                foreach($request->daysOfWeek as $dayOfWeek) {
-                    $this->createDaysofWeek($company->id, $dayOfWeek);
+                if($request->daysOfWeek) {
+                    foreach($request->daysOfWeek as $dayOfWeek) {
+                        $this->createDaysofWeek($company->id, $dayOfWeek);
+                    }
                 }
-            }
 
-            if($request->services) {
-                foreach($request->services as $service) {
-                    $this->createServiceCompany($company->id, $service);
+                if($request->services) {
+                    foreach($request->services as $service) {
+                        $this->createServiceCompany($company->id, $service);
+                    }
                 }
-            }
 
-            if($request->employees) {
-                foreach($request->employees as $employee) {
-                    $this->createEmployeesOfCompany($company->id, $employee);
+                if($request->employees) {
+                    foreach($request->employees as $employee) {
+                        $this->createEmployeesOfCompany($company->id, $employee);
+                    }
                 }
+                
+                return response()->json([
+                    "message" => "Unidade criada com sucesso",
+                ], 200);
+            } else {
+                Log::error("Error create company", [$request]);
+                return response()->json([
+                    "message" => "Erro ao criar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
             }
-            
-            return response()->json([
-                "message" => "Unidade criada com sucesso",
-            ], 200);
         } else {
-            Log::error("Error create company", [$request]);
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Erro ao criar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                "message" => "Usuário sem permissão para criar unidade.",
             ], 400);
         }
     }
@@ -173,35 +181,51 @@ class CompanyController extends Controller
 
     public function update(Request $request, Company $company)
     {
-        Log::info("Updating company", [$request]);
-        $company->update($request->all());
-        if($company->save()) {
-            return response()->json([
-                "message" => "Unidade atualizada com sucesso",
-            ], 200);
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            Log::info("Updating company", [$request]);
+            $company->update($request->all());
+            if($company->save()) {
+                return response()->json([
+                    "message" => "Unidade atualizada com sucesso",
+                ], 200);
+            } else {
+                Log::info("Error updating company", [$request]);
+                return response()->json([
+                    "message" => "Erro ao atualizar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
         } else {
-            Log::info("Error updating company", [$request]);
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Erro ao atualizar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                "message" => "Usuário sem permissão para atualizar unidade.",
             ], 400);
         }
     }
 
     public function delete($id)
     {
-        try {
-            $company = Company::findOrFail($id); 
-            Log::info("Inativation of the company $company");
-            $company->status = false;
-            $company->save();
-            Log::info("Company inactivated successfully");
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $company = Company::findOrFail($id); 
+                Log::info("Inativation of the company $company");
+                $company->status = false;
+                $company->save();
+                Log::info("Company inactivated successfully");
+                return response()->json([
+                    "message" => "Unidade inativada com sucesso.",
+                ], 200);
+            } catch(\Exception $e) {
+                Log::error("Error inativation of the company $id");
+                return response()->json([
+                    "message" => "Erro ao inativar unidade. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Unidade inativada com sucesso.",
-            ], 200);
-        } catch(\Exception $e) {
-            Log::error("Error inativation of the company $id");
-            return response()->json([
-                "message" => "Erro ao inativar unidade. Entre em contato com o administrador do site.",
+                "message" => "Usuário sem permissão para inativar unidade.",
             ], 400);
         }
     }

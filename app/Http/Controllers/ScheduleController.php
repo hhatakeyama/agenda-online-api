@@ -7,16 +7,18 @@ use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
+use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
-    public function getSheduleFromEmployee($employee_id)
+    public function getSheduleFromEmployee(Request $request)
     {
+        //receive  date and company_id from request and return shedules per employee
         $schedule = Schedule::with("scheduleItems", "client")->where("employee_id", $employee_id)->paginate(10);
         return response()->json([
             "data" => $schedule
         ], 200);
-    }//receive  date and company_id in the query and return shedule per employee
+    }
 
 
     public function getSheduleFromCliente($client_id)
@@ -29,6 +31,7 @@ class ScheduleController extends Controller
 
     public function getSchedulesFromEmployeesBeginningToday($employee_id)
     {
+        Log::info("Searching schedules from employee");
         $schedule = Schedule::with("scheduleItems")->whereHas("scheduleItems", function ($query) use ($employee_id) {
             $query->where("employee_id", $employee_id);
         })->where("date", ">=", date("Y-m-d"))->get();
@@ -46,6 +49,7 @@ class ScheduleController extends Controller
             'client_id' => 'required|max:255',
             'date' => 'required',
         ]);
+        $schedule->confirmed_hash = Hash::make($request->company_id + $request->employee_id + Carbon::now());
         $schedule = Schedule::create($request->all());
         if ($schedule->save()) {
             if ($request->services) {
@@ -143,5 +147,22 @@ class ScheduleController extends Controller
             $recipient,
             ['from' => $twilio_number, 'body' => $message]
         );
+    }
+    public function confirmationScheudleMessage(Request $request)
+    {
+        Log::info("Received schedule to confirmed", [$request]);
+        $shedule = Schedule::where('confirmed_hash', $request->confirmed_hash)->firstOrFail();
+        $shedule->confirmed = true;
+        if ($shedule->save()) {
+            Log::info("Schedule Confimated", [$shedule]);
+            return response()->json([
+                "message" => "Agendamento confirmado"
+            ], 200);
+        } else {
+            Log::error("Error confirm schedule", [$shedule]);
+            return response()->json([
+                "message" => "Erro ao confirmar agendamento"
+            ], 400);
+        }
     }
 }

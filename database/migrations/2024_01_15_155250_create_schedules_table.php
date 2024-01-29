@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('confirmed')->default(false);
             $table->boolean('done')->default(false);
             $table->string("date");
+            $table->string("confirmed_hash");
             $table->timestamps();
             
             $table->foreign('company_id')->references('id')->on('companies');

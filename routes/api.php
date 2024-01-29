@@ -105,5 +105,6 @@ Route::prefix('site')->group(function () {
     });
     Route::prefix('schedules')->group(function () {
         Route::get('sendSms/{recipient}', [ScheduleController::class, 'sendMessage']);
+        Route::get('confirmShedule', [ScheduleController::class, 'confirmationScheudleMessage']);
     });
 });

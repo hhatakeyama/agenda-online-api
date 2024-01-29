@@ -11,6 +11,7 @@ class Schedule extends Model
         "company_id",
         "client_id",
         "confirmed",
+        "confirmed_hash",
         "done",
     ];
 

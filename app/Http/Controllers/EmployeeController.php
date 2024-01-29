@@ -37,7 +37,8 @@ class EmployeeController extends Controller
 
     public function create(Request $request)
     {
-        if ($request->user()->type !== 'f') {
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Creating employee", [$request]);
             $validated = $request->validate([
                 'name' => 'required|max:255',
@@ -87,6 +88,8 @@ class EmployeeController extends Controller
 
     public function update(Request $request, User $employee)
     {
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
         Log::info("Updating employee", [$request->id]);
         $employee->update($request->all());
         if ($employee->save()) {
@@ -97,6 +100,12 @@ class EmployeeController extends Controller
             Log::info("Error updating employee", [$request]);
             return response()->json([
                 "message" => "Erro ao atualizar funcionario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+            ], 400);
+        }
+        } else {
+            Log::error("User without permission", [$request]);
+            return response()->json([
+                "message" => "Você não tem permissão para atualizar um funcionario.",
             ], 400);
         }
     }

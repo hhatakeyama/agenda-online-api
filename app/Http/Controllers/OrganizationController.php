@@ -27,7 +27,8 @@ class OrganizationController extends Controller
 
     public function getById(Request $request)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a'|| $request->user()->type === 'g') {
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $organization = Organization::findOrFail($request->id);
                 Log::info("Searching organization id" [$request->id]);
@@ -67,7 +68,8 @@ class OrganizationController extends Controller
 
     public function create(Request $request)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a') {
+        $allowedTypes = ['a', 's'];
+        if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Creating organization");
             $validated = $request->validate([
                 'registeredName' => 'required|max:255',
@@ -89,7 +91,7 @@ class OrganizationController extends Controller
         } else {
             Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Você não tem permissão para criar uma empresa.",
+                "message" => "Você não tem permissão para criar a empresa.",
             ], 400);
         }
             
@@ -97,7 +99,8 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organization $organization)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a' || $request->user()->type === 'g') {
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Updating organization", [$request->id]);
             $organization->update($request->all());
             if($organization->save()) {
@@ -113,14 +116,15 @@ class OrganizationController extends Controller
         } else {
             Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Você não tem permissão para criar uma empresa.",
+                "message" => "Você não tem permissão para atualizar a empresa.",
             ], 400);
         }
     }
 
     public function delete(Request $request)
     {
-        if($request->user()->type === 's' || $request->user()->type === 'a') {
+        $allowedTypes = ['a', 's'];
+        if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $organization = Organization::findOrFail($request->id);        
                 Log::info("Inativation of the organization", [$request->id]);
@@ -139,7 +143,7 @@ class OrganizationController extends Controller
         } else {
             Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Você não tem permissão para criar uma empresa.",
+                "message" => "Você não tem permissão para inativar a empresa.",
             ], 400);
         }
     }

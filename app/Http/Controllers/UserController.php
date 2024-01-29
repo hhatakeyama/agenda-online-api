@@ -45,31 +45,47 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
-        Log::info("Creating user");
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'email' => 'required|max:255',
-            'password' => 'required',
-            'type' => 'required',
-            'organization_id' => 'required|integer',
-        ]);
-        $users = User::create($request->all());
-        $users->password = Hash::make($request->password);
-        if($users->save()) {
-            Log::info("user created", [$users]);
-            return response()->json([
-                "message" => "Usuario criado com sucesso",
-            ], 200);
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            Log::info("Creating user");
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'email' => 'required|max:255',
+                'password' => 'required',
+                'type' => 'required',
+                'organization_id' => 'required|integer',
+            ]);
+            $users = User::create($request->all());
+            $users->password = Hash::make($request->password);
+            if($users->save()) {
+                Log::info("user created", [$users]);
+                return response()->json([
+                    "message" => "Usuario criado com sucesso",
+                ], 200);
+            } else {
+                Log::error("Error create user", [$request]);
+                return response()->json([
+                    "message" => "Erro ao criar usuario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
         } else {
-            Log::error("Error create user", [$request]);
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Erro ao criar usuario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-            ], 400);
-        }
+                "message" => "Você não tem permissão para criar um usuario.",
+            ], 400);}
     }
 
     public function update(Request $request, User $user)
     {
+        $allowedTypes = ['a', 's'];
+        if (!in_array($request->user()->type, $allowedTypes)) {
+            if($request->user()->id !== $request->id){
+                Log::error("User without permission", [$request]);
+                return response()->json([
+                    "message" => "Você não tem permissão para atualizar esse usuario.",
+                ], 400);
+            }
+        }
         Log::info("Updating user", [$request->id]);
         $user->update($request->all());
         if($user->save()) {
@@ -86,19 +102,27 @@ class UserController extends Controller
 
     public function delete($id)
     {
-        try {
-            $user = User::findOrFail($id); 
-            Log::info("Inativation of the user $user");
-            $user->status = false;
-            $user->save();
-            Log::info("user inactivated successfully");
+        $allowedTypes = ['a', 's'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $user = User::findOrFail($id); 
+                Log::info("Inativation of the user $user");
+                $user->status = false;
+                $user->save();
+                Log::info("user inactivated successfully");
+                return response()->json([
+                    "message" => "Funcionario inativado com sucesso.",
+                ], 200);
+            } catch(\Exception $e) {
+                Log::error("Error inativation of the user $id");
+                return response()->json([
+                    "message" => "Erro ao inativar usuario. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Funcionario inativado com sucesso.",
-            ], 200);
-        } catch(\Exception $e) {
-            Log::error("Error inativation of the user $id");
-            return response()->json([
-                "message" => "Erro ao inativar usuario. Entre em contato com o administrador do site.",
+                "message" => "Você não tem permissão para inativar o usuario.",
             ], 400);
         }
     }

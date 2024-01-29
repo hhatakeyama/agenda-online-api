@@ -60,6 +60,13 @@ class ServiceController extends Controller
 
     public function update(Request $request, Service $service)
     {
+        $allowedTypes = ['a', 's', 'g'];
+        if (!in_array($request->user()->type, $allowedTypes)) {
+            Log::info("User without permission tried to update service", [$request->user()]);
+            return response()->json([
+                "message" => "Você não tem permissão para atualizar servicos.",
+            ], 401);
+        }
         Log::info("Updating service", [$request->id]);
         $service->update($request->all());
         if($service->save()) {
@@ -75,20 +82,28 @@ class ServiceController extends Controller
     }
 
     public function delete($id)
-     {
-        try {
-            $service = Service::findOrFail($id); 
-            Log::info("Inativation of the service", [$service]);
-            $service->status = false;
-            $service->save();
-            Log::info("Service inactivated successfully");
+    {
+        $allowedTypes = ['a', 's', 'g'];
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $service = Service::findOrFail($id); 
+                Log::info("Inativation of the service", [$service]);
+                $service->status = false;
+                $service->save();
+                Log::info("Service inactivated successfully");
+                return response()->json([
+                    "message" => "Servico inativado com sucesso.",
+                ], 200);
+            } catch(\Exception $e) {
+                Log::error("Error inativation of the service $id");
+                return response()->json([
+                    "message" => "Erro ao inativar servico. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission", [$request]);
             return response()->json([
-                "message" => "Servico inativado com sucesso.",
-            ], 200);
-        } catch(\Exception $e) {
-            Log::error("Error inativation of the service $id");
-            return response()->json([
-                "message" => "Erro ao inativar servico. Entre em contato com o administrador do site.",
+                "message" => "Usuário sem permissão para inativar servico.",
             ], 400);
         }
     }

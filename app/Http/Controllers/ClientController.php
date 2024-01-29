@@ -59,6 +59,15 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
+        $allowedTypes = ['a', 's'];
+        if (!in_array($request->user()->type, $allowedTypes)) {
+            if($request->user()->id !== $request->id){
+                Log::error("User without permission", [$request]);
+                return response()->json([
+                    "message" => "Você não tem permissão para atualizar esse usuario.",
+                ], 400);
+            }
+        }
         Log::info("Updating client", [$request]);
         $client->update($request->all());
         if($client->save()) {
