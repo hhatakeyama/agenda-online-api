@@ -13,13 +13,20 @@ class ScheduleController extends Controller
 {
     public function getSheduleFromEmployee(Request $request)
     {
-        //receive  date and company_id from request and return shedules per employee
-        $schedule = Schedule::with("scheduleItems", "client")->where("employee_id", $employee_id)->paginate(10);
+        $schedules = Schedule::with("scheduleItems", "client")->where("company_id", $request->company_id)->where("date","=", $request->date)->get();
+        $schedulesFromEmployees = [];
+        foreach ($schedules as $item) {
+            foreach ($item->scheduleItems as $scheduleItem) {
+                if (!array_key_exists($scheduleItem->employee_id, $schedulesFromEmployees)) {
+                    $schedulesFromEmployees[$scheduleItem->employee_id] = [];
+                }
+                array_push($schedulesFromEmployees[$scheduleItem->employee_id], $scheduleItem);
+            }
+        }
         return response()->json([
-            "data" => $schedule
+            "data" => $schedulesFromEmployees
         ], 200);
     }
-
 
     public function getSheduleFromCliente($client_id)
     {

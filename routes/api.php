@@ -26,6 +26,7 @@ use App\Http\Controllers\ScheduleController;
 */
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('loginClient', [AuthController::class, 'loginClient']);
 
 Route::prefix('states')->group(function () {
     Route::get('/', [StateController::class, 'get']);
@@ -87,8 +88,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         });
         Route::prefix('schedules')->group(function () {
             Route::get('employee/{employee_id}', [ScheduleController::class, 'getSheduleFromEmployee']);
-            Route::post('client//{client_id}', [ScheduleController::class, 'getSheduleFromCliente']);
-            Route::patch('create', [ScheduleController::class, 'create']);
+            Route::post('client/{client_id}', [ScheduleController::class, 'getSheduleFromCliente']);
             Route::patch('update/{client}', [ScheduleController::class, 'update']);
             Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
         });
@@ -107,6 +107,7 @@ Route::prefix('site')->group(function () {
         Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
     });
     Route::prefix('schedules')->group(function () {
+        Route::patch('create', [ScheduleController::class, 'create']);
         Route::get('sendSms/{recipient}', [ScheduleController::class, 'sendMessage']);
         Route::get('confirmShedule', [ScheduleController::class, 'confirmationScheudleMessage']);
     });
