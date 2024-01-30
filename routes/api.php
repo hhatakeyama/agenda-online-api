@@ -26,7 +26,7 @@ use App\Http\Controllers\ScheduleController;
 */
 
 Route::post('login', [AuthController::class, 'login']);
-Route::post('loginClient', [AuthController::class, 'loginClient']);
+Route::post('login-client', [AuthController::class, 'loginClient']);
 
 Route::prefix('states')->group(function () {
     Route::get('/', [StateController::class, 'get']);
@@ -103,12 +103,12 @@ Route::prefix('site')->group(function () {
     Route::prefix('companies')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
     });
-    Route::prefix('schedulesFromEmployee')->group(function () {
+    Route::prefix('schedules-from-employee')->group(function () {
         Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
     });
     Route::prefix('schedules')->group(function () {
-        Route::patch('create', [ScheduleController::class, 'create']);
-        Route::get('sendSms/{recipient}', [ScheduleController::class, 'sendMessage']);
-        Route::get('confirmShedule', [ScheduleController::class, 'confirmationScheudleMessage']);
+        Route::post('create', [ScheduleController::class, 'create']);
+        Route::get('send-sms/{recipient}', [ScheduleController::class, 'sendMessage']);
+        Route::get('confirm-schedule', [ScheduleController::class, 'confirmationScheduleMessage']);
     });
 });

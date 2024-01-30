@@ -8,6 +8,7 @@ use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class ScheduleController extends Controller
 {
@@ -56,12 +57,12 @@ class ScheduleController extends Controller
             'client_id' => 'required|max:255',
             'date' => 'required',
         ]);
-        $schedule->confirmed_hash = Hash::make($request->company_id + $request->employee_id + Carbon::now());
         $schedule = Schedule::create($request->all());
+        $schedule->confirmed_hash = Hash::make($request->company_id + $request->employee_id + Carbon::now());
         if ($schedule->save()) {
-            if ($request->services) {
-                foreach ($request->services as $service) {
-                    $this->createScheduleItems($schedule->id, $service);
+            if ($request->items) {
+                foreach ($request->items as $item) {
+                    $this->createScheduleItems($schedule->id, $item);
                 }
             }
             $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
@@ -78,23 +79,23 @@ class ScheduleController extends Controller
         }
     }
 
-    private function createScheduleItems($schedule_id, $service)
+    private function createScheduleItems($schedule_id, $item)
     {
-        Log::info("Update schedule item", [$service]);
-        $schedule_item = ScheduleItem::find($service->id);
+        Log::info("Update schedule item", [$item]);
+        $schedule_item = ScheduleItem::find($item->id);
         $schedule_item->update([
             'schedule_id' => $schedule_id,
-            'employee_id' => $service['employee_id'],
-            'service_id' => $service['service_id'],
-            'start_time' => $service['start_time'],
-            'end_time' => $service['end_time'],
-            'price' => $service['price'],
-            'duration' => $service["duration"],
+            'employee_id' => $item['employee_id'],
+            'service_id' => $item['service_id'],
+            'start_time' => $item['start_time'],
+            'end_time' => $item['end_time'],
+            'price' => $item['price'],
+            'duration' => $item["duration"],
         ]);
         if ($schedule_item->save()) {
             Log::info("Schedule Item updated", [$schedule_item]);
         } else {
-            Log::error("Error update schedule item", [$service]);
+            Log::error("Error update schedule item", [$item]);
         }
     }
 
@@ -155,7 +156,7 @@ class ScheduleController extends Controller
             ['from' => $twilio_number, 'body' => $message]
         );
     }
-    public function confirmationScheudleMessage(Request $request)
+    public function confirmationScheduleMessage(Request $request)
     {
         Log::info("Received schedule to confirmed", [$request]);
         $shedule = Schedule::where('confirmed_hash', $request->confirmed_hash)->firstOrFail();

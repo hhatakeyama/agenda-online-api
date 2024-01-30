@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -28,16 +29,20 @@ class AuthController extends Controller
             ], 400);
         }
     }
+
     public function loginClient(Request $request){
         Log::info("request", [$request]);
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+        $userLogged = Auth::guard('client')->attempt($credentials);
         if (Auth::guard('client')->attempt($credentials)) {
-            Log::info("user logged", [$request->email]);
-            $request->user()->tokens()->where('name', $request->email)->delete();
-            $token = $request->user()->createToken($request->email);
+            $loggedUser = Auth::guard('client')->user();
+            Log::info("user logged", [$loggedUser]);
+            $user = User::find($loggedUser->id);
+            $user->tokens()->where('name', $request->email)->delete();
+            $token = $user->createToken($request->email);
             return response()->json([
                 'token' => $token->plainTextToken,
             ], 200);

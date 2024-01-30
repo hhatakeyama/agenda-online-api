@@ -10,7 +10,6 @@ class Service extends Model
     protected $fillable = [
         "name",
         "description",
-        "can_simultaneous",
         "organization_id",
         "serviceCategory_id",
         "price",
@@ -19,6 +18,9 @@ class Service extends Model
         'send_sms',
         'email_message',
         'sms_message',
+        "can_choose_random",
+        "can_choose_employee",
+        "can_simultaneous",
         "status",
     ];
 

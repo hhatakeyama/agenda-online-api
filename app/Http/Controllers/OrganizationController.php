@@ -61,7 +61,7 @@ class OrganizationController extends Controller
         } catch(\Exception $e) {
             Log::error("Error searching companies from organization", [$slug]);
             return response()->json([
-                "message" => "Unidades não encontradas.",
+                "message" => "Empresa não encontrada.",
             ], 400);
         }
     }

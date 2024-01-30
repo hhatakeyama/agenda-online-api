@@ -24,6 +24,9 @@ class ServicesSeeder extends Seeder
                 'send_sms' => 1,
                 'serviceCategory_id' => 1,
                 'organization_id' => 1,
+                'can_choose_random' => true,
+                'can_choose_employee' => true,
+                'can_simultaneous' => true,
                 'status' => true,
             ],
             1 => [
@@ -35,6 +38,9 @@ class ServicesSeeder extends Seeder
                 'send_sms' => 1,
                 'serviceCategory_id' => 1,
                 'organization_id' => 1,
+                'can_choose_random' => false,
+                'can_choose_employee' => false,
+                'can_simultaneous' => true,
                 'status' => true,
             ]            
         ]);
