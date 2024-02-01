@@ -203,7 +203,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
         $allowedTypes = ['a', 's', 'g'];
         if (in_array($request->user()->type, $allowedTypes)) {

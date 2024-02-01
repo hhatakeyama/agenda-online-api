@@ -7,7 +7,6 @@ use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class ScheduleController extends Controller
@@ -37,9 +36,18 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function getSchedulesFromEmployeesBeginningToday($employee_id)
+    public function getSchedulesFromEmployeesBeginningToday()
     {
-        Log::info("Searching schedules from employee");
+        Log::info("Searching schedules from employees beginning today");
+        $schedule = Schedule::with("scheduleItems")->where("date", ">=", date("Y-m-d"))->get();
+        return response()->json([
+            "data" => $schedule
+        ], 200);
+    }
+
+    public function getSchedulesFromEmployeeBeginningToday($employee_id)
+    {
+        Log::info("Searching schedules from employee beginning today");
         $schedule = Schedule::with("scheduleItems")->whereHas("scheduleItems", function ($query) use ($employee_id) {
             $query->where("employee_id", $employee_id);
         })->where("date", ">=", date("Y-m-d"))->get();
@@ -52,13 +60,15 @@ class ScheduleController extends Controller
     {
         Log::info("Creating schedule", [$request]);
         $validated = $request->validate([
-            'employee_id' => 'required|max:255',
-            'company_id' => 'required|max:255',
-            'client_id' => 'required|max:255',
+            'client_id' => 'required',
+            'company_id' => 'required',
             'date' => 'required',
+            'items' => 'required',
         ]);
-        $schedule = Schedule::create($request->all());
-        $schedule->confirmed_hash = Hash::make($request->company_id + $request->employee_id + Carbon::now());
+
+        $scheduleData = $request->all();
+        $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
+        $schedule = Schedule::create($scheduleData);
         if ($schedule->save()) {
             if ($request->items) {
                 foreach ($request->items as $item) {
@@ -81,21 +91,13 @@ class ScheduleController extends Controller
 
     private function createScheduleItems($schedule_id, $item)
     {
-        Log::info("Update schedule item", [$item]);
-        $schedule_item = ScheduleItem::find($item->id);
-        $schedule_item->update([
-            'schedule_id' => $schedule_id,
-            'employee_id' => $item['employee_id'],
-            'service_id' => $item['service_id'],
-            'start_time' => $item['start_time'],
-            'end_time' => $item['end_time'],
-            'price' => $item['price'],
-            'duration' => $item["duration"],
-        ]);
+        Log::info("Create schedule item", [$item]);
+        $item['schedule_id'] = $schedule_id;
+        $schedule_item = ScheduleItem::create($item);
         if ($schedule_item->save()) {
-            Log::info("Schedule Item updated", [$schedule_item]);
+            Log::info("Schedule Item created", [$schedule_item]);
         } else {
-            Log::error("Error update schedule item", [$item]);
+            Log::error("Error create schedule item", [$item]);
         }
     }
 

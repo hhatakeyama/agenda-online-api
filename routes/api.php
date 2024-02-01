@@ -96,6 +96,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
 
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::get('me', [ClientController::class, 'me']);
+});
+
 Route::prefix('site')->group(function () {
     Route::prefix('organizations')->group(function () {
         Route::get('{slug}', [OrganizationController::class, 'getCompaniesFromOrganization']);
@@ -104,7 +108,8 @@ Route::prefix('site')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
     });
     Route::prefix('schedules-from-employee')->group(function () {
-        Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
+        Route::get('/', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);
+        Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeeBeginningToday']);
     });
     Route::prefix('schedules')->group(function () {
         Route::post('create', [ScheduleController::class, 'create']);

@@ -20,7 +20,6 @@ class UserController extends Controller
 
     public function me(Request $request)
     {
-        Log::info("Searching me ");
         Log::info("Searching me ", [$request]);
         return response()->json([
             'data' => $request->user()
@@ -117,7 +116,7 @@ class UserController extends Controller
         }
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
         $allowedTypes = ['a', 's'];
         if (in_array($request->user()->type, $allowedTypes)) {

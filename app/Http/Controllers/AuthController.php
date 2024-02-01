@@ -36,7 +36,6 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-        $userLogged = Auth::guard('client')->attempt($credentials);
         if (Auth::guard('client')->attempt($credentials)) {
             $loggedUser = Auth::guard('client')->user();
             Log::info("user logged", [$loggedUser]);

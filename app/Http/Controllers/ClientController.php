@@ -34,6 +34,14 @@ class ClientController extends Controller
         }
     }
 
+    public function me(Request $request)
+    {
+        Log::info("Searching me ", [$request->user()]);
+        return response()->json([
+            'data' => $request->user()
+        ], 200);
+    }
+
     public function create(Request $request)
     {
         Log::info("Creating client");
