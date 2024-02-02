@@ -13,7 +13,7 @@ class ScheduleController extends Controller
 {
     public function getSheduleFromEmployee(Request $request)
     {
-        $schedules = Schedule::with("scheduleItems", "client")->where("company_id", $request->company_id)->where("date","=", $request->date)->get();
+        $schedules = Schedule::with("scheduleItems", "client")->where("company_id", $request->company_id)->where("date", "=", $request->date)->get();
         $schedulesFromEmployees = [];
         foreach ($schedules as $item) {
             foreach ($item->scheduleItems as $scheduleItem) {
@@ -75,7 +75,10 @@ class ScheduleController extends Controller
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
+
+            // Essa mensagem vai no template da view do email
             $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
+            // new \App\Mail\Schedule($schedule);
 
             Log::info("Schedule created", [$schedule]);
             return response()->json([
@@ -88,6 +91,34 @@ class ScheduleController extends Controller
             ], 400);
         }
     }
+
+    // public function smsAviso($sms = false, $email = false)
+    // {
+    //     Log::info('Cron job manual executado' . date("Y-m-d H:i:s"));
+
+    //     date_default_timezone_set('America/Sao_Paulo');
+    //     $hoje = date("Y-m-d");
+    //     if ($hoje != "2018-06-12") {
+    //         $leads = Lead::where("data_voucher", $hoje)->get();
+    //         foreach ($leads as $lead) {
+    //             $promocao = Promocao::find($lead->promocao_id);
+    //             if ($sms !== false && $sms !== 'false') {
+    //                 Log::info('Enviando SMS para: ' . $lead->telefone);
+    //                 \App\Jobs\SmsAviso::dispatch($lead, $promocao);
+    //                 Log::info('SMS enviado para: ' . $lead->telefone);
+    //             }
+
+    //             if ($email !== false) {
+    //                 Log::info('Enviando e-mail para: ' . $lead->email);
+    //                 $date = date('d/m/Y', strtotime($lead->data_voucher));
+    //                 $lead->dia = $date;
+    //                 Mail::to([$lead->email])
+    //                     ->queue(new \App\Mail\Aviso($lead, $promocao, $lead->unidade, $date, $lead->periodo->nome));
+    //                 Log::info('E-mail enviado para: ' . $lead->email);
+    //             }
+    //         }
+    //     }
+    // }
 
     private function createScheduleItems($schedule_id, $item)
     {
