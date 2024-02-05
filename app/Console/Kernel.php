@@ -27,8 +27,6 @@ class Kernel extends ConsoleKernel
 
                 Log::info('Enviando sms para ' . $schedule->client->name);               
             }
-
-
         })->timezone('America/Sao_Paulo')->dailyAt('08:00');
 
         // $schedule->command('backup:clean')->daily()->at('01:00');
