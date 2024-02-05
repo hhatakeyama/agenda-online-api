@@ -20,12 +20,14 @@ class ClientsSeeder extends Seeder
                 'id' => 1,
                 'name' => 'admin',
                 'email' => 'rcamillo122@gmail.com',
+                'mobilePhone' => '17982241332',
                 'password' => Hash::make('pass'),
             ],
             1 => [
                 'id' => 2,
                 'name' => 'renan camillo',
                 'email' => 'rcamillo12@gmail.com',
+                'mobilePhone' => '17982241332',
                 'password' => Hash::make('pass'),
             ],
         ]);

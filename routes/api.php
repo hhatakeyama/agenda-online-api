@@ -86,18 +86,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::patch('update/{client}', [ClientController::class, 'update']);
             Route::delete('delete/{id}', [ClientController::class, 'delete']);
         });
-        Route::prefix('schedules')->group(function () {
-            Route::get('employee/{employee_id}', [ScheduleController::class, 'getSheduleFromEmployee']);
-            Route::post('client/{client_id}', [ScheduleController::class, 'getSheduleFromCliente']);
-            Route::patch('update/{client}', [ScheduleController::class, 'update']);
-            Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
-        });
+    });
+
+    Route::get('me', [ClientController::class, 'me']);
+
+    Route::prefix('site/schedules')->group(function () {
+        Route::post('client/{client_id}', [ScheduleController::class, 'getSheduleFromCliente']);
+        Route::patch('update', [ScheduleController::class, 'update']);
+        Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
     });
     Route::post('logout', [AuthController::class, 'logout']);
-});
-
-Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::get('me', [ClientController::class, 'me']);
 });
 
 Route::prefix('site')->group(function () {
@@ -112,8 +110,10 @@ Route::prefix('site')->group(function () {
         Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeeBeginningToday']);
     });
     Route::prefix('schedules')->group(function () {
-        Route::post('create', [ScheduleController::class, 'create']);
-        Route::get('send-sms/{recipient}', [ScheduleController::class, 'sendMessage']);
-        Route::get('confirm-schedule', [ScheduleController::class, 'confirmationScheduleMessage']);
+        Route::patch('create', [ScheduleController::class, 'create']);
+        Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
+        Route::get('sendSms', [ScheduleController::class, 'sendMessage']);
+        Route::get('responseSms', [ScheduleController::class, 'responseMessage']);
+        Route::get('confirmShedule', [ScheduleController::class, 'confirmationScheudleMessage']);
     });
 });

@@ -8,6 +8,7 @@ use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
@@ -76,8 +77,7 @@ class ScheduleController extends Controller
                 }
             }
 
-            // Essa mensagem vai no template da view do email
-            $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
+            // $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
             // new \App\Mail\Schedule($schedule);
 
             Log::info("Schedule created", [$schedule]);
@@ -176,34 +176,12 @@ class ScheduleController extends Controller
         }
     }
 
-    public function sendMessage($recipient)
+    public function getAllSchedulesTodayToSentMessage()
     {
-        $recipient = "+55" . $recipient;
-        $message = "Olá, você tem um novo agendamento para o dia 23/01/2024 às 10:00. Confirme seu agendamento em: https://www.google.com.br";
-        $account_sid = getenv("TWILIO_SID");
-        $auth_token = getenv("TWILIO_AUTH_TOKEN");
-        $twilio_number = getenv("TWILIO_NUMBER");
-        $client = new Client($account_sid, $auth_token);
-        $client->messages->create(
-            $recipient,
-            ['from' => $twilio_number, 'body' => $message]
-        );
-    }
-    public function confirmationScheduleMessage(Request $request)
-    {
-        Log::info("Received schedule to confirmed", [$request]);
-        $shedule = Schedule::where('confirmed_hash', $request->confirmed_hash)->firstOrFail();
-        $shedule->confirmed = true;
-        if ($shedule->save()) {
-            Log::info("Schedule Confimated", [$shedule]);
-            return response()->json([
-                "message" => "Agendamento confirmado"
-            ], 200);
-        } else {
-            Log::error("Error confirm schedule", [$shedule]);
-            return response()->json([
-                "message" => "Erro ao confirmar agendamento"
-            ], 400);
+        $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", false)->get();
+        $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
+        foreach ($schedules as $schedule) {
+            $this->sendMessage($schedule, $message);
         }
     }
 }

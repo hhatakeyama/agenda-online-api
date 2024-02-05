@@ -13,25 +13,23 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->call(function () {
-        //     Log::info('Cron job executado' . date("Y-m-d H:i:s"));
+        $schedule->call(function () {
+            Log::info('Job executado' . date("Y-m-d H:i:s"));
 
-        //     date_default_timezone_set('America/Sao_Paulo');
-        //     $hoje = date("Y-m-d");
-        //     if ($hoje != "2018-06-12") {
-        //         $leads = Lead::where("data_voucher", $hoje)->get();
-        //         foreach ($leads as $lead) {
-        //             $promocao = Promocao::find($lead->promocao_id);
-        //             \App\Jobs\SmsAviso::dispatch($lead, $promocao);
+            date_default_timezone_set('America/Sao_Paulo');
+            $hoje = date("Y-m-d");
+            $hoje->add(new DateInterval('P1D'));
+            $proximaData = $hoje->format('Y-m-d');
 
-        //             Log::info('Enviando e-mail para ' . $lead->email);
-        //             $date = date('d/m/Y', strtotime($lead->data_voucher));
-        //             $lead->dia = $date;
-        //             Mail::to([$lead->email])
-        //                 ->queue(new \App\Mail\Aviso($lead, $promocao, $lead->unidade, $date, $lead->periodo->nome));
-        //         }
-        //     }
-        // })->timezone('America/Sao_Paulo')->dailyAt('09:00');
+            $schedules = Schedule::with('client')->where("date", $proximaData)->where("confirmed", false)->get();
+            foreach ($schedules as $schedule) {
+                \App\Jobs\SmsAviso::dispatch($schedule);
+
+                Log::info('Enviando sms para ' . $schedule->client->name);               
+            }
+
+
+        })->timezone('America/Sao_Paulo')->dailyAt('08:00');
 
         // $schedule->command('backup:clean')->daily()->at('01:00');
         // $schedule->command('backup:run')->twiceDaily(2, 14);
