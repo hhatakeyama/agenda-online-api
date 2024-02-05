@@ -47,14 +47,16 @@ class ClientController extends Controller
         Log::info("Creating client");
         $validated = $request->validate([
             'name' => 'required|max:255',
-            'email' => 'required|max:255',
-            'password' => 'required|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'required|confirmed|max:255',
         ]);
-        $clients = Client::create($request->all());
-        $clients->password = Hash::make($request->password);
-        if($clients->save()) {
-            Log::info("Client created", [$clients]);
+        $client = Client::create($request->all());
+        $client->password = Hash::make($request->password);
+        $token = $client->createToken($request->email, ['server:update']);
+        if($client->save()) {
+            Log::info("Client created", [$client]);
             return response()->json([
+                "token" => $token->plainTextToken,
                 "message" => "Cliente criado com sucesso",
             ], 200);
         } else {

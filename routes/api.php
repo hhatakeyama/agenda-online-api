@@ -101,6 +101,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 Route::prefix('site')->group(function () {
+    Route::prefix('clients')->group(function () {
+        Route::post('create', [ClientController::class, 'create']);
+        Route::patch('update/{client}', [ClientController::class, 'update']);
+    });
     Route::prefix('organizations')->group(function () {
         Route::get('{slug}', [OrganizationController::class, 'getCompaniesFromOrganization']);
     });

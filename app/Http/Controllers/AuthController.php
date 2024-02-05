@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -38,15 +38,15 @@ class AuthController extends Controller
         ]);
         if (Auth::guard('client')->attempt($credentials)) {
             $loggedUser = Auth::guard('client')->user();
-            Log::info("user logged", [$loggedUser]);
-            $user = User::find($loggedUser->id);
-            $user->tokens()->where('name', $request->email)->delete();
-            $token = $user->createToken($request->email);
+            Log::info("client logged", [$loggedUser]);
+            $client = Client::find($loggedUser->id);
+            $client->tokens()->where('name', $request->email)->delete();
+            $token = $client->createToken($request->email);
             return response()->json([
                 'token' => $token->plainTextToken,
             ], 200);
         } else {
-            Log::error("Error login user", [$request]);
+            Log::error("Error login client", [$request]);
             return response()->json([
                 "message" => "Erro ao logar usuario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
             ], 400);
