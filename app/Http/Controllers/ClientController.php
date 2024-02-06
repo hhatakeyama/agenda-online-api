@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Client;
+use Mail;
 
 class ClientController extends Controller
 {
@@ -55,6 +56,13 @@ class ClientController extends Controller
         $token = $client->createToken($request->email, ['server:update']);
         if($client->save()) {
             Log::info("Client created", [$client]);
+            $data = array('name' => $client->name);
+            Mail::send('mails.cadastro', $data, function($message){
+                $message->to($client->email);
+                $message->subject('Skedyou - Cadastro efetuado com sucesso!');
+                $message->from('suporte@skedyou.com','Equipe Skedyou'); 
+            });
+
             return response()->json([
                 "token" => $token->plainTextToken,
                 "message" => "Cliente criado com sucesso",

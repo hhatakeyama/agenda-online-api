@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Mail;
 
 class ScheduleController extends Controller
 {
@@ -76,9 +77,19 @@ class ScheduleController extends Controller
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-
-            // $sms_message = "Seu agendamento foi realizado para o dia " . date("d/m/Y", strtotime($schedule->date)) . " às " . date("H:i", strtotime($schedule->start_time));
-            // new \App\Mail\Schedule($schedule);
+            $client = Client::find($request->client_id);
+            $company = Company::find($request->company_id);
+            $data = [
+                'name' => $client->name,
+                'date' => date("d/m/Y", strtotime($schedule->date)),
+                'start_time' => date("H:i", strtotime($schedule->start_time)),
+                'company' => $company->name,
+            ];
+            Mail::send('mails.agendamento', $data, function($message){
+                $message->to($client->email);
+                $message->subject('Skedyou - Agendamento efetuado com sucesso!');
+                $message->from('suporte@skedyou.com','Equipe Skedyou'); 
+            });
 
             Log::info("Schedule created", [$schedule]);
             return response()->json([
@@ -91,34 +102,6 @@ class ScheduleController extends Controller
             ], 400);
         }
     }
-
-    // public function smsAviso($sms = false, $email = false)
-    // {
-    //     Log::info('Cron job manual executado' . date("Y-m-d H:i:s"));
-
-    //     date_default_timezone_set('America/Sao_Paulo');
-    //     $hoje = date("Y-m-d");
-    //     if ($hoje != "2018-06-12") {
-    //         $leads = Lead::where("data_voucher", $hoje)->get();
-    //         foreach ($leads as $lead) {
-    //             $promocao = Promocao::find($lead->promocao_id);
-    //             if ($sms !== false && $sms !== 'false') {
-    //                 Log::info('Enviando SMS para: ' . $lead->telefone);
-    //                 \App\Jobs\SmsAviso::dispatch($lead, $promocao);
-    //                 Log::info('SMS enviado para: ' . $lead->telefone);
-    //             }
-
-    //             if ($email !== false) {
-    //                 Log::info('Enviando e-mail para: ' . $lead->email);
-    //                 $date = date('d/m/Y', strtotime($lead->data_voucher));
-    //                 $lead->dia = $date;
-    //                 Mail::to([$lead->email])
-    //                     ->queue(new \App\Mail\Aviso($lead, $promocao, $lead->unidade, $date, $lead->periodo->nome));
-    //                 Log::info('E-mail enviado para: ' . $lead->email);
-    //             }
-    //         }
-    //     }
-    // }
 
     private function createScheduleItems($schedule_id, $item)
     {

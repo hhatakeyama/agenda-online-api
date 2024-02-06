@@ -1,6 +1,6 @@
 @extends('mails.layout')
 @section('content')
-  <p style="text-align: justify;">Olá, {{$client->name}}.</p>
+  <p style="text-align: justify;">Olá, {{$name}}.</p>
 
   <p style="text-align: justify;">
     Seu cadastro foi realizado com sucesso<br><br>

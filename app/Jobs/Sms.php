@@ -41,7 +41,7 @@ class Sms implements ShouldQueue
             return;
         }
 
-        $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
+        $message = 'Olá, ' . $this->schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($this->schedule->date)) . ' às ' . date("H:i", strtotime($this->schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
         
         $smsController->sendMessage($this->schedule, $message);
     }

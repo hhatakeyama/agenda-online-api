@@ -23,7 +23,8 @@ class Kernel extends ConsoleKernel
 
             $schedules = Schedule::with('client')->where("date", $proximaData)->where("confirmed", false)->get();
             foreach ($schedules as $schedule) {
-                \App\Jobs\SmsAviso::dispatch($schedule);
+                \App\Jobs\Sms::dispatch($schedule);
+                \App\Jobs\Email::dispatch($schedule);
 
                 Log::info('Enviando sms para ' . $schedule->client->name);               
             }
