@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Client;
+use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
-use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Mail;
@@ -71,21 +72,23 @@ class ScheduleController extends Controller
         $scheduleData = $request->all();
         $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
         $schedule = Schedule::create($scheduleData);
+        $firstItem = $request->items[0];
         if ($schedule->save()) {
             if ($request->items) {
                 foreach ($request->items as $item) {
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-            $client = Client::find($request->client_id);
+            $client = Client::where('id', $request->client_id)->firstOrFail();
             $company = Company::find($request->company_id);
+            $firstItem = $request->items[0];
             $data = [
                 'name' => $client->name,
                 'date' => date("d/m/Y", strtotime($schedule->date)),
-                'start_time' => date("H:i", strtotime($schedule->start_time)),
+                'start_time' => $firstItem['start_time'],
                 'company' => $company->name,
             ];
-            Mail::send('mails.agendamento', $data, function($message){
+            Mail::send('mails.agendamento', $data, function($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
                 $message->from('suporte@skedyou.com','Equipe Skedyou'); 

@@ -29,8 +29,10 @@ class Sms implements ShouldQueue
     public function handle(): void
     {
         Log::info('Enviando email para ' . $this->schedule->client->name);
-        Mail::send('mails.confirmacao', ['schedule' => $this->schedule], function($message){
-            $message->to($this->schedule->client->email, $this->schedule->client->name)->subject('Confirmação de Agendamento');
+        Mail::send('mails.confirmacao', ['schedule' => $this->schedule], function($message) {
+            $message->to($this->schedule->client->email);
+            $message->subject('Skedyou -Confirmação de agendamento!');
+            $message->from('suporte@skedyou.com','Equipe Skedyou'); 
         });
     }
 }

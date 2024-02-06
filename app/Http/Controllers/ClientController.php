@@ -57,7 +57,7 @@ class ClientController extends Controller
         if($client->save()) {
             Log::info("Client created", [$client]);
             $data = array('name' => $client->name);
-            Mail::send('mails.cadastro', $data, function($message){
+            Mail::send('mails.cadastro', $data, function($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Cadastro efetuado com sucesso!');
                 $message->from('suporte@skedyou.com','Equipe Skedyou'); 
