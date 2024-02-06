@@ -48,7 +48,7 @@ class AuthController extends Controller
         } else {
             Log::error("Error login client", [$request]);
             return response()->json([
-                "message" => "Erro ao logar usuario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                "message" => "E-mail ou senha inválidos",
             ], 400);
         }
     }
