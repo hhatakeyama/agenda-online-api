@@ -114,6 +114,7 @@ Route::prefix('site')->group(function () {
         Route::get('{employee_id}', [ScheduleController::class, 'getSchedulesFromEmployeeBeginningToday']);
     });
     Route::prefix('schedules')->group(function () {
+        Route::get('unavailables', [ScheduleController::class, 'unavailables']);
         Route::post('create', [ScheduleController::class, 'create']);
         Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
         Route::get('sendSms', [ScheduleController::class, 'sendMessage']);

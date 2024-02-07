@@ -9,8 +9,7 @@ use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 
 class ScheduleController extends Controller
 {
@@ -56,6 +55,32 @@ class ScheduleController extends Controller
         })->where("date", ">=", date("Y-m-d"))->get();
         return response()->json([
             "data" => $schedule
+        ], 200);
+    }
+
+    public function unavailables(Request $request)
+    {
+        Log::info("List all unavailable schedules");
+        $queryParams = $request->query;
+        $general = Schedule::with("scheduleItems")
+            ->where("date", ">=", date("Y-m-d"))
+            ->whereHas("scheduleItems", function ($query) use ($queryParams) {
+                if ($queryParams['services']) {
+                    $query->whereIn("service_id", $queryParams['services']);
+                }
+            })->get();
+        $employees = Schedule::with("scheduleItems")
+            ->where("date", ">=", date("Y-m-d"))
+            ->whereHas("scheduleItems", function ($query) use ($queryParams) {
+                if ($queryParams['services']) {
+                    $query->whereIn("service_id", $queryParams['services']);
+                }
+            })->get();
+        return response()->json([
+            "data" => [
+                "general" => $general,
+                "employees" => $employees,
+            ]
         ], 200);
     }
 
@@ -162,12 +187,12 @@ class ScheduleController extends Controller
         }
     }
 
-    public function getAllSchedulesTodayToSentMessage()
-    {
-        $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", false)->get();
-        $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
-        foreach ($schedules as $schedule) {
-            $this->sendMessage($schedule, $message);
-        }
-    }
+    // public function getAllSchedulesTodayToSentMessage()
+    // {
+    //     $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", false)->get();
+    //     $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
+    //     foreach ($schedules as $schedule) {
+    //         $this->sendMessage($schedule, $message);
+    //     }
+    // }
 }
