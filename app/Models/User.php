@@ -28,7 +28,11 @@ class User extends Authenticatable
     ];
 
     public function companyEmployees(){
-        return $this->belongsToMany("App\Models\CompanyEmployee", "employee_id", "id");
+        return $this->hasMany("App\Models\CompanyEmployee", "employee_id", "id");
+    }
+
+    public function scheduleItems(){
+        return $this->hasMany("App\Models\ScheduleItem", "employee_id", "id");
     }
 
     /**

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('type', ['s', 'a', 'g', 'f'])->default("f");
             $table->boolean('status')->default(true);
-            $table->unsignedBigInteger('organization_id');
+            $table->integer('organization_id')->nullable();
             $table->timestamps();            
 
             $table->foreign('organization_id')->references('id')->on('organizations');

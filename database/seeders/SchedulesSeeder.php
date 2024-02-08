@@ -14,20 +14,32 @@ class SchedulesSeeder extends Seeder
     public function run(): void
     {
         DB::table('schedules')->delete();
-        
+
         DB::table('schedules')->insert([
             0 => [
                 'company_id' => 1,
                 'client_id' => 2,
-                'date' => '2024-01-23 10:00:00',
+                'date' => '2024-08-23 10:00:00',
                 'confirmed_hash' => Hash::make('1'),
             ],
             1 => [
                 'company_id' => 1,
                 'client_id' => 1,
-                'date' => "2024-01-24 15:00:00",
+                'date' => "2024-09-24 15:00:00",
                 'confirmed_hash' => Hash::make('2'),
-            ]            
+            ],
+            2 => [
+                'company_id' => 1,
+                'client_id' => 2,
+                'date' => '2024-10-23 10:00:00',
+                'confirmed_hash' => Hash::make('3'),
+            ],
+            3 => [
+                'company_id' => 1,
+                'client_id' => 1,
+                'date' => "2024-11-24 15:00:00",
+                'confirmed_hash' => Hash::make('4'),
+            ]
         ]);
     }
 }

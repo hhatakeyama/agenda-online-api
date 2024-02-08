@@ -22,7 +22,7 @@ class ScheduleItemsSeeder extends Seeder
                 'start_time' => '10:00',
                 'end_time' => '10:30',
                 'price' => 50.00,
-                'duration' => '00:30:00'
+                'duration' => '00:30'
             ],          
             1 => [
                 'schedule_id' => 2,
@@ -31,7 +31,7 @@ class ScheduleItemsSeeder extends Seeder
                 'start_time' => '15:00',
                 'end_time' => '16:00',
                 'price' => 250.00,
-                'duration' => '01:00:00'
+                'duration' => '01:00'
             ],          
         ]);
     }

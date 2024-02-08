@@ -13,14 +13,32 @@ class CompanyEmployeesSeeder extends Seeder
 
         DB::table('company_employees')->insert([
             0 => [
-                'id' => 1,
                 'company_id' => 1,
-                'employee_id' => 2,
+                'employee_id' => 4,
             ],
             1 => [
-                'id' => 2,
                 'company_id' => 1,
-                'employee_id' => 3,
+                'employee_id' => 5,
+            ],
+            2 => [
+                'company_id' => 1,
+                'employee_id' => 6,
+            ],
+            3 => [
+                'company_id' => 2,
+                'employee_id' => 7,
+            ],
+            4 => [
+                'company_id' => 2,
+                'employee_id' => 8,
+            ],
+            5 => [
+                'company_id' => 3,
+                'employee_id' => 7,
+            ],
+            6 => [
+                'company_id' => 3,
+                'employee_id' => 8,
             ],
         ]);
     }

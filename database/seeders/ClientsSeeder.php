@@ -17,15 +17,13 @@ class ClientsSeeder extends Seeder
 
         DB::table('clients')->insert([
             0 => [
-                'id' => 1,
-                'name' => 'admin',
-                'email' => 'rcamillo122@gmail.com',
-                'mobilePhone' => '17982241332',
+                'name' => 'Heitor Hatakeyama',
+                'email' => 'heitor.suh@gmail.com',
+                'mobilePhone' => '17991323162',
                 'password' => Hash::make('pass'),
             ],
             1 => [
-                'id' => 2,
-                'name' => 'renan camillo',
+                'name' => 'Renan camillo',
                 'email' => 'rcamillo12@gmail.com',
                 'mobilePhone' => '17982241332',
                 'password' => Hash::make('pass'),

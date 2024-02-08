@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class ScheduleController extends Controller
 {
@@ -30,11 +31,17 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function getSheduleFromCliente($client_id)
+    public function getSheduleFromClient(Request $request, $client_id)
     {
-        $schedule = Schedule::with("scheduleItems.employee")->where("client_id", $client_id)->paginate(10);
+        Log::info("Searching client schedules" . $client_id, [$request]);
+        $page = $request->page ? $request->page : 1;
+        $pageSize = $request->page_size ? $request->page_size : 20;
+        $schedules = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company"])
+            ->where("client_id", $client_id)
+            ->orderBy("date", "DESC")
+            ->paginate($pageSize, ['*'], 'page', $page);
         return response()->json([
-            "message" => "Agenda do cliente"
+            "data" => $schedules
         ], 200);
     }
 
@@ -61,25 +68,28 @@ class ScheduleController extends Controller
     public function unavailables(Request $request)
     {
         Log::info("List all unavailable schedules");
-        $queryParams = $request->query;
-        $general = Schedule::with("scheduleItems")
-            ->where("date", ">=", date("Y-m-d"))
-            ->whereHas("scheduleItems", function ($query) use ($queryParams) {
-                if ($queryParams['services']) {
-                    $query->whereIn("service_id", $queryParams['services']);
-                }
+        $queries = [
+            'organization' => $request->organization,
+            'company' => $request->company,
+            'services' => $request->services ? json_decode($request->services) : []
+        ];
+
+        $general = ScheduleItem::with("schedule")
+            ->whereHas("schedule", function ($query) {
+                $query->where("date", ">=", date("Y-m-d H:i:s"));
+            });
+        if ($queries['services']) {
+            $general->whereIn("service_id", $queries['services']);
+        }
+        $companyEmployees = User::with(["companyEmployees.company", "scheduleItems.schedule"])
+            ->whereHas("companyEmployees.company", function ($query) use ($queries) {
+                $query->where("id", $queries['company']);
             })->get();
-        $employees = Schedule::with("scheduleItems")
-            ->where("date", ">=", date("Y-m-d"))
-            ->whereHas("scheduleItems", function ($query) use ($queryParams) {
-                if ($queryParams['services']) {
-                    $query->whereIn("service_id", $queryParams['services']);
-                }
-            })->get();
+
         return response()->json([
             "data" => [
-                "general" => $general,
-                "employees" => $employees,
+                "general" => $general->get(),
+                "employees" => $companyEmployees,
             ]
         ], 200);
     }
@@ -113,10 +123,10 @@ class ScheduleController extends Controller
                 'start_time' => $firstItem['start_time'],
                 'company' => $company->name,
             ];
-            Mail::send('mails.agendamento', $data, function($message) use ($client) {
+            Mail::send('mails.agendamento', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
-                $message->from('suporte@skedyou.com','Equipe Skedyou'); 
+                $message->from('suporte@skedyou.com', 'Equipe Skedyou');
             });
 
             Log::info("Schedule created", [$schedule]);

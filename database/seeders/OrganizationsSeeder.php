@@ -16,17 +16,17 @@ class OrganizationsSeeder extends Seeder
 
         DB::table('organizations')->insert([
             0 => [
-                'registeredName' => 'Organization 1 Ltda',
-                'tradingName' => 'Organization 1',
-                'cnpj' => '12.345.678/0001-90',
-                'slug' => 'organization-1-ltda',
+                'registeredName' => 'Barbearia Modelo Ltda',
+                'tradingName' => 'Barbearia Modelo',
+                'cnpj' => '35.799.851/0001-20',
+                'slug' => 'barbearia-modelo',
                 'status' => true,
             ],
             1 => [
-                'registeredName' => 'Organization 2 Ltda',
-                'tradingName' => 'Organization 2',
-                'cnpj' => '12.345.678/0001-91',
-                'slug' => 'organization-2-ltda',
+                'registeredName' => 'Cabeleireira Ltda',
+                'tradingName' => 'Cabeleireira',
+                'cnpj' => '81.851.894/0001-25',
+                'slug' => 'cabeleireira-ltda',
                 'status' => true,
             ],
         ]);
