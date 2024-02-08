@@ -67,29 +67,36 @@ class ScheduleController extends Controller
 
     public function unavailables(Request $request)
     {
-        Log::info("List all unavailable schedules");
-        $queries = [
-            'organization' => $request->organization,
-            'company' => $request->company,
-            'services' => $request->services ? json_decode($request->services) : []
-        ];
+        $date = $request->date;
+        $date = date("Y-m-d", strtotime($date));
+        $company = $request->company;
+        $services = $request->services ? array($request->services) : [];
+        Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
 
         $general = ScheduleItem::with("schedule")
-            ->whereHas("schedule", function ($query) {
-                $query->where("date", ">=", date("Y-m-d H:i:s"));
-            });
-        if ($queries['services']) {
-            $general->whereIn("service_id", $queries['services']);
-        }
-        $companyEmployees = User::with(["companyEmployees.company", "scheduleItems.schedule"])
-            ->whereHas("companyEmployees.company", function ($query) use ($queries) {
-                $query->where("id", $queries['company']);
+            ->whereHas("schedule", function ($query) use ($date) {
+                $query->where("date", "=", $date);
             })->get();
+        $companyEmployees = User::with(["companyEmployees.company", "employeeServices.service", "scheduleItems.schedule"]);
+            //
+            // AJUSTAR REGRA DA COMPANY E VERIFICAR do service
+            //
+            // ->whereHas("companyEmployees.company", function ($query) use ($company) {
+            //     $query->where("company_id", $company);
+            // })
+            // ->whereHas("scheduleItems.schedule", function ($query) use ($company) {
+            //     $query->where("company_id", $company);
+            // });
+        if ($services) {
+            $companyEmployees->whereHas("employeeServices.service", function ($query) use ($services) {
+                $query->whereIn("service_id", $services);
+            });
+        }
 
         return response()->json([
             "data" => [
-                "general" => $general->get(),
-                "employees" => $companyEmployees,
+                "general" => $general,
+                "employees" => $companyEmployees->get(),
             ]
         ], 200);
     }
@@ -105,6 +112,7 @@ class ScheduleController extends Controller
         ]);
 
         $scheduleData = $request->all();
+        $scheduleData['date'] = date("Y-m-d", strtotime($request->date));
         $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
         $schedule = Schedule::create($scheduleData);
         $firstItem = $request->items[0];
