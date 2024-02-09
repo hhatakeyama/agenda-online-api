@@ -74,19 +74,13 @@ class ScheduleController extends Controller
         Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
 
         $general = ScheduleItem::with("schedule")
-            ->whereHas("schedule", function ($query) use ($date) {
-                $query->where("date", "=", $date);
+        ->whereHas("schedule", function ($query) use ($company, $date) {
+                $query->where("company_id", $company)->where("date", "=", $date);
             })->get();
-        $companyEmployees = User::with(["companyEmployees.company", "employeeServices.service", "scheduleItems.schedule"]);
-            //
-            // AJUSTAR REGRA DA COMPANY E VERIFICAR do service
-            //
-            // ->whereHas("companyEmployees.company", function ($query) use ($company) {
-            //     $query->where("company_id", $company);
-            // })
-            // ->whereHas("scheduleItems.schedule", function ($query) use ($company) {
-            //     $query->where("company_id", $company);
-            // });
+        $companyEmployees = User::with("companyEmployees", "employeeServices.service", "scheduleItems.schedule" )
+            ->whereHas("companyEmployees", function ($query) use ($company) {
+                $query->where("company_id", $company);
+            });
         if ($services) {
             $companyEmployees->whereHas("employeeServices.service", function ($query) use ($services) {
                 $query->whereIn("service_id", $services);
@@ -95,8 +89,8 @@ class ScheduleController extends Controller
 
         return response()->json([
             "data" => [
-                "general" => $general,
-                "employees" => $companyEmployees->get(),
+                "general" => $general, // ok
+                "employees" => $companyEmployees->get(), // ajustar
             ]
         ], 200);
     }
