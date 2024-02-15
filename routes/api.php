@@ -90,10 +90,17 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::get('me', [ClientController::class, 'me']);
 
-    Route::prefix('site/schedules')->group(function () {
-        Route::get('client/{client_id}', [ScheduleController::class, 'getSheduleFromClient']);
-        Route::patch('update', [ScheduleController::class, 'update']);
-        Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
+    Route::prefix('site')->group(function () {
+        Route::prefix('clients')->group(function () {
+            Route::patch('update/{client}', [ClientController::class, 'update']);
+            Route::post('update/{client}/picture', [ClientController::class, 'updatePicture']);
+        });
+
+        Route::prefix('schedules')->group(function () {
+            Route::get('client/{client_id}', [ScheduleController::class, 'getSheduleFromClient']);
+            Route::patch('update', [ScheduleController::class, 'update']);
+            Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
+        });
     });
     Route::post('logout', [AuthController::class, 'logout']);
 });
@@ -101,7 +108,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::prefix('site')->group(function () {
     Route::prefix('clients')->group(function () {
         Route::post('create', [ClientController::class, 'create']);
-        Route::patch('update/{client}', [ClientController::class, 'update']);
     });
     Route::prefix('organizations')->group(function () {
         Route::get('{slug}', [OrganizationController::class, 'getCompaniesFromOrganization']);

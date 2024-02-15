@@ -94,7 +94,7 @@ class UserController extends Controller
             'organization_id' => 'required|integer',
         ];
         if($emailFilled) {
-            $regras['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
+            $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
         }
         if ($request->password) {
             $validations['password'] = ['required', 'string', 'confirmed'];

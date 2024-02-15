@@ -36,7 +36,7 @@ class ScheduleController extends Controller
         Log::info("Searching client schedules" . $client_id, [$request]);
         $page = $request->page ? $request->page : 1;
         $pageSize = $request->page_size ? $request->page_size : 20;
-        $schedules = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company"])
+        $schedules = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
             ->where("client_id", $client_id)
             ->orderBy("date", "DESC")
             ->paginate($pageSize, ['*'], 'page', $page);

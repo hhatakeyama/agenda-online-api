@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Client;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class ClientController extends Controller
 {
-  public function get()
+    public function get()
     {
         Log::info("Searching all clients");
         $clients = Client::paginate(10);
@@ -27,7 +30,7 @@ class ClientController extends Controller
             return response()->json([
                 "data" => $client
             ], 200);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Log::info("Client not found", [$id]);
             return response()->json([
                 "message" => "Cliente não encontrado."
@@ -54,13 +57,15 @@ class ClientController extends Controller
         $client = Client::create($request->all());
         $client->password = Hash::make($request->password);
         $token = $client->createToken($request->email, ['server:update']);
-        if($client->save()) {
+        if ($client->save()) {
             Log::info("Client created", [$client]);
+            // $filePath = "app/public/clients/";
+            // File::makeDirectory($filePath, $mode = 0777, true, true);
             $data = array('name' => $client->name);
-            Mail::send('mails.cadastro', $data, function($message) use ($client) {
+            Mail::send('mails.cadastro', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                $message->from('suporte@skedyou.com','Equipe Skedyou'); 
+                $message->from('suporte@skedyou.com', 'Equipe Skedyou');
             });
 
             return response()->json([
@@ -78,17 +83,32 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $allowedTypes = ['a', 's'];
-        if (!in_array($request->user()->type, $allowedTypes)) {
-            if($request->user()->id !== $request->id){
-                Log::error("User without permission", [$request]);
-                return response()->json([
-                    "message" => "Você não tem permissão para atualizar esse usuario.",
-                ], 400);
-            }
+        if (
+            (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
+            (!property_exists($request->user(), 'type') && $request->user()->id !== $client->id)
+        ) {
+            Log::error("User without permission", [$request]);
+            return response()->json([
+                "message" => "Você não tem permissão para atualizar esse usuario.",
+            ], 400);
         }
         Log::info("Updating client", [$request]);
-        $client->update($request->all());
-        if($client->save()) {
+        $emailFilled = $client->email != $request->email;
+        $validations = [
+            'name' => 'required|max:255',
+            'email' => 'required|max:255',
+        ];
+        $client->name = $request->name;
+        if ($emailFilled) {
+            $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:clients'];
+            $client->email = $request->email;
+        }
+        if ($request->password) {
+            $validations['password'] = ['required', 'string', 'confirmed'];
+            $client->password = Hash::make($request->password);
+        }
+        $request->validate($validations);
+        if ($client->save()) {
             return response()->json([
                 "message" => "Cliente atualizada com sucesso",
             ], 200);
@@ -100,10 +120,49 @@ class ClientController extends Controller
         }
     }
 
+    public function updatePicture(Request $request, Client $client)
+    {
+        $allowedTypes = ['a', 's'];
+        if (
+            (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
+            (!property_exists($request->user(), 'type') && $request->user()->id !== $client->id)
+        ) {
+            Log::error("User without permission", [$request]);
+            return response()->json([
+                "message" => "Você não tem permissão para atualizar esse usuario.",
+            ], 400);
+        }
+        Log::info("Updating photo", [$request]);
+        try {
+            $file = $request->file;
+            $extensao = $file->extension();
+            $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
+            $filehash = uniqid(date('HisYmd'));
+            $filename = $filehash . "." . $extensao;
+
+            $filePath = "app/public/clients/";
+            $this->gerarFotos($filePath, $filehash, $extensao, $file);
+            $client->picture = $filename;
+        } catch (\Exception $e) {
+            Log::error("Erro upload foto: " . $e->getMessage());
+            return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
+        }
+        if ($client->save()) {
+            return response()->json([
+                "message" => "Foto atualizada com sucesso",
+            ], 200);
+        } else {
+            Log::info("Error updating photo", [$request]);
+            return response()->json([
+                "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+            ], 400);
+        }
+    }
+
     public function delete($id)
     {
         try {
-            $client = Client::findOrFail($id); 
+            $client = Client::findOrFail($id);
             Log::info("Inativation of the client $client");
             $client->status = false;
             $client->save();
@@ -111,11 +170,71 @@ class ClientController extends Controller
             return response()->json([
                 "message" => "Cliente inativada com sucesso.",
             ], 200);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Log::error("Error inativation of the client $id");
             return response()->json([
                 "message" => "Erro ao inativar cliente. Entre em contato com o administrador do site.",
             ], 400);
+        }
+    }
+
+
+    // Funções locais
+    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
+    {
+        $filename = $filehash . "." . $extensao;
+        //Tamanho original
+        $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
+            "rotate" => $rotate
+        ), 100);
+        //Tamanho 84x84px
+        $this->cropImage($filePath, $filename, $extensao, $file, 84, 84, array(
+            "rotate" => 0,
+            "crop" => true
+        ));
+        //Tamanho 84x84px webp
+        // $this->cropImage($filePath, $filehash . ".webp", "webp", $file, 84, 84, array(
+        //     "rotate" => 0,
+        //     "crop" => true
+        // ));
+    }
+
+    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
+    {
+        Log::info("Gerando foto: ", [$filePath, $filename]);
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read($file);
+
+        try {
+            if ($extensao == "webp") {
+                $img->encode($extensao);
+            }
+
+            if (isset($options["rotate"]) && $options["rotate"] != 0) {
+                $img->rotate($options["rotate"]);
+            }
+
+            if (isset($options["crop"]) && $options["crop"]) {
+                $dim = (intval($img->width()) / intval($img->height())) - ($imgWidth / $imgHeight);
+                if ($dim > 0) {
+                    $img->resize(null, $imgHeight, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas(null, $imgHeight, 'center', true, 'ffffff');
+                } else {
+                    $img->resize($imgWidth, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas($imgWidth, null, 'center', true, 'ffffff');
+                }
+                $img->crop($imgWidth, $imgHeight);
+
+                $filename = $imgWidth . "x" . $imgHeight . "-" . $filename;
+            }
+
+            $img->save(storage_path($filePath . $filename), $qualidade);
+        } catch (\Exception $e) {
+            Log::info("Erro ao gerar foto", [$e->getMessage()]);
         }
     }
 }
