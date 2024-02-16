@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
+use App\Models\Service;
 use App\Models\User;
 
 class ScheduleController extends Controller
@@ -70,27 +71,38 @@ class ScheduleController extends Controller
         $date = $request->date;
         $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
-        $services = $request->services ? array($request->services) : [];
+        $services = $request->services ? explode(",", $request->services) : [];
         Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
 
-        $general = ScheduleItem::with("schedule")
-        ->whereHas("schedule", function ($query) use ($company, $date) {
-                $query->where("company_id", $company)->where("date", "=", $date);
-            })->get();
-        $companyEmployees = User::with("companyEmployees", "employeeServices.service", "scheduleItems.schedule" )
-            ->whereHas("companyEmployees", function ($query) use ($company) {
+        $companyEmployees = array();
+        $companyServices = Service::with("employeeServices.employee")
+            ->whereIn('id', $services)
+            ->whereHas('employeeServices.employee.companyEmployees', function ($query) use ($company) {
                 $query->where("company_id", $company);
-            });
-        if ($services) {
-            $companyEmployees->whereHas("employeeServices.service", function ($query) use ($services) {
-                $query->whereIn("service_id", $services);
-            });
+            })
+            ->get();
+        foreach ($companyServices as &$service) {
+            foreach ($service->employeeServices as &$employeeService) {
+                $scheduleItems = ScheduleItem::with("schedule")
+                    ->whereHas("schedule", function ($query) use ($company, $date) {
+                        $query->where("company_id", $company)->where("date", $date);
+                    })
+                    ->where("employee_id", $employeeService->employee_id)
+                    ->get();
+                $employeeService->scheduleItems = $scheduleItems;
+            }
+            array_push($companyEmployees, $service);
         }
+
+        $general = ScheduleItem::with("schedule")
+            ->whereHas("schedule", function ($query) use ($company, $date) {
+                $query->where("company_id", $company)->where("date", $date);
+            })->get();
 
         return response()->json([
             "data" => [
-                "general" => $general, // ok
-                "employees" => $companyEmployees->get(), // ajustar
+                "general" => $general,
+                "employees" => $companyEmployees,
             ]
         ], 200);
     }
