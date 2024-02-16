@@ -18,15 +18,15 @@ class Kernel extends ConsoleKernel
 
             date_default_timezone_set('America/Sao_Paulo');
             $hoje = date("Y-m-d");
-            $hoje->add(new DateInterval('P1D'));
+            $hoje->add(new \DateInterval('P1D'));
             $proximaData = $hoje->format('Y-m-d');
 
-            $schedules = Schedule::with('client')->where("date", $proximaData)->where("confirmed", false)->get();
+            $schedules = Schedule::with('client')->where("date", $proximaData)->where("confirmed", "0")->get();
             foreach ($schedules as $schedule) {
                 \App\Jobs\Sms::dispatch($schedule);
                 \App\Jobs\Email::dispatch($schedule);
 
-                Log::info('Enviando sms para ' . $schedule->client->name);               
+                Log::info('Enviando sms para ' . $schedule->client->name);
             }
         })->timezone('America/Sao_Paulo')->dailyAt('08:00');
 

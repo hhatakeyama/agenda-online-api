@@ -14,7 +14,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
 
         DB::table('company_days_of_weeks')->insert([
             0 => [
-                'day_of_week' => '1',
+                'day_of_week' => 1,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -26,7 +26,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 1,
             ],
             1 => [
-                'day_of_week' => '2',
+                'day_of_week' => 2,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -38,7 +38,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 1,
             ],
             2 => [
-                'day_of_week' => '3',
+                'day_of_week' => 3,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -50,7 +50,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 1,
             ],
             3 => [
-                'day_of_week' => '4',
+                'day_of_week' => 4,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -62,7 +62,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 1,
             ],
             4 => [
-                'day_of_week' => '5',
+                'day_of_week' => 5,
                 'start_time' => '08:00',
                 'end_time' => '18:00',
                 'start_time_2' => '',
@@ -74,7 +74,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 1,
             ],
             5 => [
-                'day_of_week' => '1',
+                'day_of_week' => 1,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -86,7 +86,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 2,
             ],
             6 => [
-                'day_of_week' => '2',
+                'day_of_week' => 2,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -98,7 +98,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 2,
             ],
             7 => [
-                'day_of_week' => '3',
+                'day_of_week' => 3,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -110,7 +110,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 2,
             ],
             8 => [
-                'day_of_week' => '4',
+                'day_of_week' => 4,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -122,7 +122,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 2,
             ],
             9 => [
-                'day_of_week' => '5',
+                'day_of_week' => 5,
                 'start_time' => '08:00',
                 'end_time' => '18:00',
                 'start_time_2' => '',
@@ -134,7 +134,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 2,
             ],
             10 => [
-                'day_of_week' => '1',
+                'day_of_week' => 1,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -146,7 +146,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 3,
             ],
             11 => [
-                'day_of_week' => '2',
+                'day_of_week' => 2,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -158,7 +158,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 3,
             ],
             12 => [
-                'day_of_week' => '3',
+                'day_of_week' => 3,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -170,7 +170,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 3,
             ],
             13 => [
-                'day_of_week' => '4',
+                'day_of_week' => 4,
                 'start_time' => '08:00',
                 'end_time' => '12:00',
                 'start_time_2' => '13:00',
@@ -182,7 +182,7 @@ class CompanyDaysOfWeekSeeder extends Seeder
                 'company_id' => 3,
             ],
             14 => [
-                'day_of_week' => '5',
+                'day_of_week' => 5,
                 'start_time' => '08:00',
                 'end_time' => '18:00',
                 'start_time_2' => '',

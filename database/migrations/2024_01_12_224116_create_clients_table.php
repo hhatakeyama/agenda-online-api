@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('mobilePhone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('status')->default(true);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });
     }

@@ -97,7 +97,7 @@ class ServiceCategoryController extends Controller
             try {
                 $serviceCategory = ServiceCategory::findOrFail($id); 
                 Log::info("Inativation of the category $serviceCategory");
-                $serviceCategory->status = false;
+                $serviceCategory->status = 0;
                 $serviceCategory->save();
                 Log::info("Category inactivated successfully");
                 return response()->json([

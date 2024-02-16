@@ -210,7 +210,7 @@ class CompanyController extends Controller
             try {
                 $company = Company::findOrFail($id); 
                 Log::info("Inativation of the company $company");
-                $company->status = false;
+                $company->status = 0;
                 $company->save();
                 Log::info("Company inactivated successfully");
                 return response()->json([

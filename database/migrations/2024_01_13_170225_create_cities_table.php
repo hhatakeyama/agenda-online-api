@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->integer('id', true);
-			$table->char('state_id', 2)->nullable();
-			$table->string('name')->nullable();
-			$table->string('path')->nullable();
-			$table->integer('priority')->nullable();
-			$table->integer('ibge_id')->nullable();
-			$table->timestamps();
+            $table->char('state_id', 2)->nullable();
+            $table->string('name')->nullable();
+            $table->string('path')->nullable();
+            $table->integer('priority')->nullable();
+            $table->integer('ibge_id')->nullable();
+            $table->timestamps();
             $table->foreign('state_id')->references('id')->on('states');
         });
     }

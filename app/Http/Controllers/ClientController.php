@@ -164,7 +164,7 @@ class ClientController extends Controller
         try {
             $client = Client::findOrFail($id);
             Log::info("Inativation of the client $client");
-            $client->status = false;
+            $client->status = 0;
             $client->save();
             Log::info("Client inactivated successfully");
             return response()->json([

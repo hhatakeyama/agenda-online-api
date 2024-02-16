@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->unsignedBigInteger('organization_id');
-            $table->boolean('status')->default(true);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');
         });

@@ -58,7 +58,7 @@ class SMSController extends Controller
     {
         Log::info("Received schedule to confirmed", [$response]);
         $shedule = Schedule::where('confirmed_hash', $response->refer)->firstOrFail();
-        $shedule->confirmed = $response->descricao == 1 ? true : false;
+        $shedule->confirmed = $response->descricao == 1 ? "1" : "0";
         if ($shedule->save()) {
             Log::info("Schedule Confimated", [$shedule]);
             return response()->json([

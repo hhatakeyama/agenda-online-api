@@ -18,27 +18,27 @@ class ServiceCategoriesSeeder extends Seeder
             0 => [
                 'name' => 'Categoria Comum',
                 'organization_id' => 1,
-                'status' => true,
+                'status' => 1,
             ],
             1 => [
                 'name' => 'Serviço Premium',
                 'organization_id' => 1,
-                'status' => true,
+                'status' => 1,
             ],            
             2 => [
                 'name' => 'Serviço VIP',
                 'organization_id' => 1,
-                'status' => true,
+                'status' => 1,
             ],            
             3 => [
                 'name' => 'Cortes Comuns',
                 'organization_id' => 2,
-                'status' => true,
+                'status' => 1,
             ],            
             4 => [
                 'name' => 'Serviço de Beleza',
                 'organization_id' => 2,
-                'status' => true,
+                'status' => 1,
             ]            
         ]);
     }

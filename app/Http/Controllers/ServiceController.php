@@ -88,7 +88,7 @@ class ServiceController extends Controller
             try {
                 $service = Service::findOrFail($id); 
                 Log::info("Inativation of the service", [$service]);
-                $service->status = false;
+                $service->status = 0;
                 $service->save();
                 Log::info("Service inactivated successfully");
                 return response()->json([

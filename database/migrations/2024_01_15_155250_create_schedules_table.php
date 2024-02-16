@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("company_id");   
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("client_id");
-            $table->boolean('confirmed')->default(false);
-            $table->boolean('done')->default(false);
+            $table->tinyInteger('confirmed')->default(0);
+            $table->tinyInteger('done')->default(0);
+            $table->tinyInteger('canceled')->default(0);
             $table->string("date");
             $table->string("confirmed_hash");
             $table->timestamps();
-            
+
             $table->foreign('company_id')->references('id')->on('companies');
             $table->foreign('client_id')->references('id')->on('clients');
         });

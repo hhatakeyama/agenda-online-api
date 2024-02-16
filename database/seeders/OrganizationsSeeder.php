@@ -20,14 +20,14 @@ class OrganizationsSeeder extends Seeder
                 'tradingName' => 'Barbearia Modelo',
                 'cnpj' => '35.799.851/0001-20',
                 'slug' => 'barbearia-modelo',
-                'status' => true,
+                'status' => 1,
             ],
             1 => [
                 'registeredName' => 'Cabeleireira Ltda',
                 'tradingName' => 'Cabeleireira',
                 'cnpj' => '81.851.894/0001-25',
                 'slug' => 'cabeleireira-ltda',
-                'status' => true,
+                'status' => 1,
             ],
         ]);
     }

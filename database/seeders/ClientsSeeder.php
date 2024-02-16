@@ -28,6 +28,12 @@ class ClientsSeeder extends Seeder
                 'mobilePhone' => '17982241332',
                 'password' => Hash::make('pass'),
             ],
+            2 => [
+                'name' => 'Teste',
+                'email' => 'teste@teste.com',
+                'mobilePhone' => '1791323162',
+                'password' => Hash::make('teste'),
+            ],
         ]);
     }
 }

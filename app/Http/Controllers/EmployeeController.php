@@ -116,7 +116,7 @@ class EmployeeController extends Controller
             try {
                 $employee = User::where("type", "f")->findOrFail($id);
                 Log::info("Inativation of the employee $employee");
-                $employee->status = false;
+                $employee->status = 0;
                 $employee->save();
                 Log::info("Employee inactivated successfully");
                 return response()->json([

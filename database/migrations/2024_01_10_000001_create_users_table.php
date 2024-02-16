@@ -20,12 +20,11 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('type', ['s', 'a', 'g', 'f'])->default("f");
-            $table->boolean('status')->default(true);
+            $table->tinyInteger('status')->default(1);
             $table->integer('organization_id')->nullable();
-            $table->timestamps();            
+            $table->timestamps();
 
             $table->foreign('organization_id')->references('id')->on('organizations');
-            
         });
     }
 

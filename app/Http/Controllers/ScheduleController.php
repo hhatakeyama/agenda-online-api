@@ -66,7 +66,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function unavailables(Request $request)
+    function unavailables(Request $request)
     {
         $date = $request->date;
         $date = date("Y-m-d", strtotime($date));
@@ -74,38 +74,59 @@ class ScheduleController extends Controller
         $services = $request->services ? explode(",", $request->services) : [];
         Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
 
-        $companyEmployees = array();
-        $companyServices = Service::with("employeeServices.employee")
-            ->whereIn('id', $services)
-            ->whereHas('employeeServices.employee.companyEmployees', function ($query) use ($company) {
-                $query->where("company_id", $company);
-            })
-            ->get();
-        foreach ($companyServices as &$service) {
-            foreach ($service->employeeServices as &$employeeService) {
-                $scheduleItems = ScheduleItem::with("schedule")
-                    ->whereHas("schedule", function ($query) use ($company, $date) {
-                        $query->where("company_id", $company)->where("date", $date);
-                    })
-                    ->where("employee_id", $employeeService->employee_id)
-                    ->get();
-                $employeeService->scheduleItems = $scheduleItems;
-            }
-            array_push($companyEmployees, $service);
-        }
-
         $general = ScheduleItem::with("schedule")
             ->whereHas("schedule", function ($query) use ($company, $date) {
-                $query->where("company_id", $company)->where("date", $date);
+                $query->where("company_id", $company)
+                    ->where("date", $date)
+                    ->where("canceled", 0);
             })->get();
 
         return response()->json([
-            "data" => [
-                "general" => $general,
-                "employees" => $companyEmployees,
-            ]
+            "data" => $general
         ], 200);
     }
+
+//     public function unavailables(Request $request)
+//     {
+//         $date = $request->date;
+//         $date = date("Y-m-d", strtotime($date));
+//         $company = $request->company;
+//         $services = $request->services ? explode(",", $request->services) : [];
+//         Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
+// // Schedule: company_id, date
+// // ScheduleItem: employee_id, service_id
+//         $companyEmployees = array();
+//         $companyServices = Service::with("employeeServices.employee")
+//             ->whereIn('id', $services)
+//             ->whereHas('employeeServices.employee.companyEmployees', function ($query) use ($company) {
+//                 $query->where("company_id", $company);
+//             })
+//             ->get();
+//         foreach ($companyServices as &$service) {
+//             foreach ($service->employeeServices as &$employeeService) {
+//                 $scheduleItems = ScheduleItem::with("schedule")
+//                     ->whereHas("schedule", function ($query) use ($company, $date) {
+//                         $query->where("company_id", $company)->where("date", $date);
+//                     })
+//                     ->where("employee_id", $employeeService->employee_id)
+//                     ->get();
+//                 $employeeService->scheduleItems = $scheduleItems;
+//             }
+//             array_push($companyEmployees, $service);
+//         }
+
+//         $general = ScheduleItem::with("schedule")
+//             ->whereHas("schedule", function ($query) use ($company, $date) {
+//                 $query->where("company_id", $company)->where("date", $date);
+//             })->get();
+
+//         return response()->json([
+//             "data" => [
+//                 "general" => $general,
+//                 "employees" => $companyEmployees,
+//             ]
+//         ], 200);
+//     }
 
     public function create(Request $request)
     {
@@ -213,7 +234,7 @@ class ScheduleController extends Controller
 
     // public function getAllSchedulesTodayToSentMessage()
     // {
-    //     $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", false)->get();
+    //     $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", "0")->get();
     //     $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
     //     foreach ($schedules as $schedule) {
     //         $this->sendMessage($schedule, $message);

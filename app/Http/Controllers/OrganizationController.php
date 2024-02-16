@@ -128,7 +128,7 @@ class OrganizationController extends Controller
             try {
                 $organization = Organization::findOrFail($request->id);        
                 Log::info("Inativation of the organization", [$request->id]);
-                $organization->status = false;
+                $organization->status = 0;
                 $organization->save();
                 Log::info("Organization inactivated successfully");
                 return response()->json([

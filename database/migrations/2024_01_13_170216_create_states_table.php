@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('states', function (Blueprint $table) {
             $table->string('id', 2)->primary();
-			$table->string('name', 50)->nullable();
-			$table->integer('region')->nullable();
-			$table->integer('ibge_id')->nullable();
+            $table->string('name', 50)->nullable();
+            $table->integer('region')->nullable();
+            $table->integer('ibge_id')->nullable();
             $table->timestamps();
         });
     }

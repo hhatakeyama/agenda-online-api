@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('company_days_of_weeks', function (Blueprint $table) {
             $table->id();
-            $table->enum("day_of_week", ["0", "1", "2", "3", "4", "5", "6"]);
+            $table->tinyInteger("day_of_week")->default(0);
             $table->string("start_time")->nullable();
             $table->string("end_time")->nullable();
             $table->string("start_time_2")->nullable();

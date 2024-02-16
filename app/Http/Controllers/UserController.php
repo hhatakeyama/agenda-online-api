@@ -123,7 +123,7 @@ class UserController extends Controller
             try {
                 $user = User::findOrFail($id); 
                 Log::info("Inativation of the user $user");
-                $user->status = false;
+                $user->status = 0;
                 $user->save();
                 Log::info("user inactivated successfully");
                 return response()->json([

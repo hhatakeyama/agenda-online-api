@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('mobilePhone')->nullable();
             $table->longText('socialMedia')->nullable();
             $table->longText('map')->nullable();
-            $table->boolean('status')->default(true);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
             $table->foreign('organization_id')->references('id')->on('organizations');
         });
