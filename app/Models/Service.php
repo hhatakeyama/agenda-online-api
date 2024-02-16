@@ -35,4 +35,11 @@ class Service extends Model
     public function employeeServices(){
         return $this->hasMany("App\Models\EmployeeService", "service_id", "id");
     }
+
+    public function scheduleItems(){
+        $today = date("Y-m-d");
+        return $this->hasMany("App\Models\ScheduleItem", "service_id", "id")->whereHas("schedule", function($query) use ($today) {
+            $query->where("date", ">=", $today);
+        });
+    }
 }
