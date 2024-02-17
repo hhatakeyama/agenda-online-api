@@ -72,26 +72,24 @@ class ScheduleController extends Controller
         $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
         $services = $request->services ? explode(",", $request->services) : [];
-        Log::info("List all unavailable schedules on " . $date, [$date, $company, $services]);
+        $employees = $request->employees ? explode(",", $request->employees) : [];
+        Log::info("List all unavailable schedules", [$company, $services]);
 
-        // List scheduled periods by service
-        $scheduledPeriodsByService = array();
-        foreach ($services as $serviceId) {
-            $service = Service::with("scheduleItems.schedule", "employeeServices.employee")
-                ->where("id", $serviceId)
-                ->first();
-            $employees = array_map(function ($employeeService) {
-                return $employeeService['employee'];
-            }, $service->employeeServices->toArray());
-            array_push($scheduledPeriodsByService, [
-                "service_id" => $serviceId,
-                "schedule_items" => $service->scheduleItems,
-                "employees" => $employees
-            ]);
-        }
+        // List all employees scheduled periods
+        $employeesScheduledPeriods = ScheduleItem::with("schedule")
+            ->whereHas("schedule", function ($query) use ($company, $date) {
+                $query->where("company_id", $company)
+                    ->where("date", $date)
+                    ->where(function ($subquery) {
+                        $subquery->where([["done", 0], ["canceled", 0]])->orWhere('done', 1);
+                    });
+            })
+            ->whereIn("employee_id", $employees)
+            ->get();
 
+        // Return all ScheduleItems
         return response()->json([
-            "data" => $scheduledPeriodsByService
+            "data" => $employeesScheduledPeriods
         ], 200);
     }
 
