@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
-            $table->string('registeredName');
-            $table->string('tradingName');
+            $table->string('registeredName')->unique();
+            $table->string('tradingName')->unique();
             $table->string('cnpj')->max(20)->unique();
             $table->string('slug')->unique();
             $table->tinyInteger('status')->default(1);

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Organization;
-use App\Models\Company;
 
 class OrganizationController extends Controller
 {
@@ -13,7 +12,11 @@ class OrganizationController extends Controller
     {
         if($request->user()->type === 's' || $request->user()->type === 'a') {
             Log::info("Searching all organizations");
-            $organizations = Organization::paginate(10);
+            $search = $request->search;
+            $organizations = Organization::where("registeredName", "LIKE", "%$search%")
+                ->orWhere("tradingName", "LIKE", "%$search%")
+                ->orWhere("cnpj", "LIKE", "%$search%")
+                ->paginate(10);
             return response()->json([
                 "data" => $organizations
             ], 200);
@@ -54,10 +57,16 @@ class OrganizationController extends Controller
         $allowedTypes = ['a', 's'];
         if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Creating organization");
-            $validated = $request->validate([
-                'registeredName' => 'required|max:255',
-                'tradingName' => 'required|max:255',
-                'cnpj' => 'required|max:20',
+            $request->validate([
+                'registeredName' => 'required|unique:organizations,registeredName|max:255',
+                'slug' => 'required|unique:organizations,slug|max:255',
+                'tradingName' => 'required|unique:organizations,tradingName|max:255',
+                'cnpj' => 'required|unique:organizations,cnpj|max:20',
+            ], [
+                "registeredName.unique" => "Razão Social já existe; ",
+                "slug.unique" => "Slug já existe; ",
+                "tradingName.unique" => "Nome Fantasia já existe; ",
+                "cnpj.unique" => "CNPJ já existe; ",
             ]);
             $organizations = Organization::create($request->all());
             if($organizations->save()) {
