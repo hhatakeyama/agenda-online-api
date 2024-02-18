@@ -1,24 +1,40 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use App\Models\Client;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use App\Models\Client;
 
 class ClientController extends Controller
 {
-    public function me(Request $request)
+    public function get()
     {
-        Log::info("Searching me ", [$request->user()]);
+        Log::info("Searching all clients");
+        $clients = Client::paginate(10);
         return response()->json([
-            'data' => $request->user()
+            "data" => $clients
         ], 200);
+    }
+
+    public function getById($id)
+    {
+        try {
+            $client = Client::findOrFail($id);
+            Log::info("Searching client id", [$client]);
+            return response()->json([
+                "data" => $client
+            ], 200);
+        } catch (\Exception $e) {
+            Log::info("Client not found", [$id]);
+            return response()->json([
+                "message" => "Cliente não encontrado."
+            ], 200);
+        }
     }
 
     public function create(Request $request)
@@ -130,6 +146,25 @@ class ClientController extends Controller
             Log::info("Error updating photo", [$request]);
             return response()->json([
                 "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+            ], 400);
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $client = Client::findOrFail($id);
+            Log::info("Inativation of the client $client");
+            $client->status = 0;
+            $client->save();
+            Log::info("Client inactivated successfully");
+            return response()->json([
+                "message" => "Cliente inativada com sucesso.",
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error("Error inativation of the client $id");
+            return response()->json([
+                "message" => "Erro ao inativar cliente. Entre em contato com o administrador do site.",
             ], 400);
         }
     }
