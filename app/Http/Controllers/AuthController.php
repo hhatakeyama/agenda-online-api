@@ -9,7 +9,7 @@ use App\Models\Client;
 
 class AuthController extends Controller
 {
-    public function loginClient(Request $request){
+    public function login(Request $request){
         Log::info("request", [$request]);
         $credentials = $request->validate([
             'email' => ['required', 'email'],
