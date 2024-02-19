@@ -31,7 +31,7 @@ class UsersSeeder extends Seeder
                 'email' => 'admin@admin.com',
                 'password' => Hash::make('admin'),
                 'picture' => '',
-                'type' => 'f',
+                'type' => 'a',
                 'organization_id' => null,
             ],
             2 => [

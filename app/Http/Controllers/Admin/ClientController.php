@@ -12,160 +12,183 @@ use App\Models\Client;
 
 class ClientController extends Controller
 {
-    public function get()
+    public function get(Request $request)
     {
-        Log::info("Searching all clients");
-        $clients = Client::paginate(10);
-        return response()->json([
-            "data" => $clients
-        ], 200);
+        $allowedTypes = ['s', 'a'];
+        Log::info("Searching all clients", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            $search = $request->search;
+            $page = $request->page ? $request->page : 1;
+            $pageSize = $request->page_size ? $request->page_size : 10;
+            $clients = [];
+            if ($request->user()->type === 'g') {
+                $clients = Client::where("name", "LIKE", "%$search%")
+                    ->where("organization_id", $request->user()->organization_id);
+            } else {
+                $clients = Client::where("name", "LIKE", "%$search%");
+                if ($request->organization_id) {
+                    $clients = $clients->where("organization_id", $request->organization_id);
+                }
+            }
+            return response()->json([
+                "data" => $clients->paginate($pageSize, ['*'], 'page', $page)
+            ], 200);
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
     }
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
-        try {
-            $client = Client::findOrFail($id);
-            Log::info("Searching client id", [$client]);
-            return response()->json([
-                "data" => $client
-            ], 200);
-        } catch (\Exception $e) {
-            Log::info("Client not found", [$id]);
-            return response()->json([
-                "message" => "Cliente não encontrado."
-            ], 200);
+        $allowedTypes = ['s', 'a'];
+        Log::info("Searching client id", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $client = null;
+                if ($request->user()->type === 'g') {
+                    $client = Client::where("organization_id", $request->user()->organization_id)
+                        ->where("id", $id)
+                        ->firstOrFail();
+                } else {
+                    $client = Client::findOrFail($id);
+                }
+                return response()->json(["data" => $client], 200);
+            } catch (\Exception $e) {
+                Log::info("Client not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Cliente não encontrado."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
     public function create(Request $request)
     {
-        Log::info("Creating client");
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'email' => 'required|email|max:255',
-            'password' => 'required|confirmed|max:255',
-        ]);
-        $client = Client::create($request->all());
-        $client->password = Hash::make($request->password);
-        $token = $client->createToken($request->email, ['server:update']);
-        if ($client->save()) {
-            Log::info("Client created", [$client]);
-            // $filePath = "app/public/clients/";
-            // File::makeDirectory($filePath, $mode = 0777, true, true);
-            $data = array('name' => $client->name);
-            Mail::send('mails.cadastro', $data, function ($message) use ($client) {
-                $message->to($client->email);
-                $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                $message->from('suporte@skedyou.com', 'Equipe Skedyou');
-            });
+        $allowedTypes = ['s', 'a'];
+        Log::info("Creating client", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            $request->validate([
+                'name' => 'required|max:255',
+                'email' => 'required|email|max:255',
+                'password' => 'required|confirmed|max:255',
+            ]);
+            $client = Client::create($request->all());
+            $client->password = Hash::make($request->password);
+            $token = $client->createToken($request->email, ['server:update']);
+            if ($client->save()) {
+                Log::info("Client created");
+                $data = array('name' => $client->name);
+                Mail::send('mails.cadastro', $data, function ($message) use ($client) {
+                    $message->to($client->email);
+                    $message->subject('Skedyou - Cadastro efetuado com sucesso!');
+                    $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+                });
 
-            return response()->json([
-                "token" => $token->plainTextToken,
-                "message" => "Cliente criado com sucesso",
-            ], 200);
+                return response()->json([
+                    "token" => $token->plainTextToken,
+                    "message" => "Cliente criado com sucesso",
+                ], 200);
+            } else {
+                Log::error("Error create client", [$request->all()]);
+                return response()->json([
+                    "message" => "Erro ao criar cliente. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
         } else {
-            Log::error("Error create client", [$request]);
-            return response()->json([
-                "message" => "Erro ao criar cliente. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-            ], 400);
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
     public function update(Request $request, Client $client)
     {
-        $allowedTypes = ['a', 's'];
-        if (
-            (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
-            (!property_exists($request->user(), 'type') && $request->user()->id !== $client->id)
-        ) {
-            Log::error("User without permission", [$request]);
-            return response()->json([
-                "message" => "Você não tem permissão para atualizar esse usuario.",
-            ], 400);
-        }
-        Log::info("Updating client", [$request]);
-        $emailFilled = $client->email != $request->email;
-        $validations = [
-            'name' => 'required|max:255',
-            'email' => 'required|max:255',
-        ];
-        $client->name = $request->name;
-        if ($emailFilled) {
-            $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:clients'];
-            $client->email = $request->email;
-        }
-        if ($request->password) {
-            $validations['password'] = ['required', 'string', 'confirmed'];
-            $client->password = Hash::make($request->password);
-        }
-        $request->validate($validations);
-        if ($client->save()) {
-            return response()->json([
-                "message" => "Cliente atualizada com sucesso",
-            ], 200);
+        $allowedTypes = ['s', 'a'];
+        Log::info("Updating client", [$request->client, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            $emailFilled = $client->email != $request->email;
+            $validations = [
+                'name' => 'required|max:255',
+                'email' => 'required|max:255',
+            ];
+            $client->name = $request->name;
+            if ($emailFilled) {
+                $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:clients'];
+                $client->email = $request->email;
+            }
+            if ($request->password) {
+                $validations['password'] = ['required', 'string', 'confirmed'];
+                $client->password = Hash::make($request->password);
+            }
+            $request->validate($validations);
+            if ($client->save()) {
+                return response()->json(["message" => "Cliente atualizado com sucesso"], 200);
+            } else {
+                Log::info("Error updating client", [$request]);
+                return response()->json([
+                    "message" => "Erro ao atualizar cliente. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
         } else {
-            Log::info("Error updating client", [$request]);
-            return response()->json([
-                "message" => "Erro ao atualizar cliente. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-            ], 400);
+            Log::info("User without permission, tried to update client");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
     public function updatePicture(Request $request, Client $client)
     {
-        $allowedTypes = ['a', 's'];
-        if (
-            (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
-            (!property_exists($request->user(), 'type') && $request->user()->id !== $client->id)
-        ) {
-            Log::error("User without permission", [$request]);
-            return response()->json([
-                "message" => "Você não tem permissão para atualizar esse usuario.",
-            ], 400);
-        }
-        Log::info("Updating photo", [$request]);
-        try {
-            $file = $request->file;
-            $extensao = $file->extension();
-            $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
-            $filehash = uniqid(date('HisYmd'));
-            $filename = $filehash . "." . $extensao;
-
-            $filePath = "app/public/clients/";
-            $this->gerarFotos($filePath, $filehash, $extensao, $file);
-            $client->picture = $filename;
-        } catch (\Exception $e) {
-            Log::error("Erro upload foto: " . $e->getMessage());
-            return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
-        }
-        if ($client->save()) {
-            return response()->json([
-                "message" => "Foto atualizada com sucesso",
-            ], 200);
+        $allowedTypes = ['s', 'a'];
+        Log::info("Updating photo", [$request->client, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $file = $request->file;
+                $extensao = $file->extension();
+                $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
+                $filehash = uniqid(date('HisYmd'));
+                $filename = $filehash . "." . $extensao;
+    
+                $filePath = "app/public/clients/";
+                $this->gerarFotos($filePath, $filehash, $extensao, $file);
+                $client->picture = $filename;
+            } catch (\Exception $e) {
+                Log::error("Erro upload foto: " . $e->getMessage());
+                return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
+            }
+            if ($client->save()) {
+                return response()->json(["message" => "Foto atualizada com sucesso"], 200);
+            } else {
+                Log::info("Error updating photo", [$request]);
+                return response()->json([
+                    "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
         } else {
-            Log::info("Error updating photo", [$request]);
-            return response()->json([
-                "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-            ], 400);
+            Log::info("User without permission, tried to update picture");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
-        try {
-            $client = Client::findOrFail($id);
-            Log::info("Inativation of the client $client");
-            $client->status = 0;
-            $client->save();
-            Log::info("Client inactivated successfully");
-            return response()->json([
-                "message" => "Cliente inativada com sucesso.",
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error("Error inativation of the client $id");
-            return response()->json([
-                "message" => "Erro ao inativar cliente. Entre em contato com o administrador do site.",
-            ], 400);
+        $allowedTypes = ['s', 'a'];
+        Log::info("Inativation of the client", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $client = Client::findOrFail($id);
+                $client->status = 0;
+                $client->save();
+                Log::info("Client inactivated successfully");
+                return response()->json(["message" => "Cliente inativado com sucesso."], 200);
+            } catch (\Exception $e) {
+                Log::error("Error inativation of the client", [$e->getMessage()]);
+                return response()->json([
+                    "message" => "Erro ao inativar cliente. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 

@@ -91,24 +91,24 @@ Route::prefix('admin')->group(function () {
         Route::prefix('clients')->group(function () {
             Route::get('/', [AdminClientController::class, 'get']);
             Route::get('{id}', [AdminClientController::class, 'getById']);
-            Route::post('create', [AdminClientController::class, 'create']);
-            Route::patch('update/{client}', [AdminClientController::class, 'update']);
-            Route::post('update/{client}/picture', [AdminClientController::class, 'updatePicture']);
-            Route::delete('delete/{id}', [AdminClientController::class, 'delete']);
+            Route::post('/', [AdminClientController::class, 'create']);
+            Route::patch('{client}', [AdminClientController::class, 'update']);
+            Route::post('{client}/picture', [AdminClientController::class, 'updatePicture']);
+            Route::delete('{id}', [AdminClientController::class, 'delete']);
         });
         Route::prefix('companies')->group(function () {
             Route::get('/', [AdminCompanyController::class, 'get']);
             Route::get('{id}', [AdminCompanyController::class, 'getById']);
-            Route::post('create', [AdminCompanyController::class, 'create']);
-            Route::patch('update/{company}', [AdminCompanyController::class, 'update']);
-            Route::delete('delete/{id}', [AdminCompanyController::class, 'delete']);
+            Route::post('/', [AdminCompanyController::class, 'create']);
+            Route::patch('{company}', [AdminCompanyController::class, 'update']);
+            Route::delete('{id}', [AdminCompanyController::class, 'delete']);
         });
         Route::prefix('employees')->group(function () {
             Route::get('/', [AdminEmployeeController::class, 'get']);
             Route::get('{id}', [AdminEmployeeController::class, 'getById']);
-            Route::post('create', [AdminEmployeeController::class, 'create']);
-            Route::patch('update/{employee}', [AdminEmployeeController::class, 'update']);
-            Route::delete('delete/{id}', [AdminEmployeeController::class, 'delete']);
+            Route::post('/', [AdminEmployeeController::class, 'create']);
+            Route::patch('{employee}', [AdminEmployeeController::class, 'update']);
+            Route::delete('{id}', [AdminEmployeeController::class, 'delete']);
         });
         Route::prefix('organizations')->group(function () {
             Route::get('/', [AdminOrganizationController::class, 'get']);
@@ -120,9 +120,9 @@ Route::prefix('admin')->group(function () {
         Route::prefix('service-categories')->group(function () {
             Route::get('/', [AdminServiceCategoryController::class, 'get']);
             Route::get('{id}', [AdminServiceCategoryController::class, 'getById']);
-            Route::post('create', [AdminServiceCategoryController::class, 'create']);
-            Route::patch('update/{serviceCategory}', [AdminServiceCategoryController::class, 'update']);
-            Route::delete('delete/{id}', [AdminServiceCategoryController::class, 'delete']);
+            Route::post('/', [AdminServiceCategoryController::class, 'create']);
+            Route::patch('{serviceCategory}', [AdminServiceCategoryController::class, 'update']);
+            Route::delete('{id}', [AdminServiceCategoryController::class, 'delete']);
         });
         Route::prefix('schedules')->group(function () {
             Route::get('/', [AdminScheduleController::class, 'get']);
@@ -134,16 +134,16 @@ Route::prefix('admin')->group(function () {
         Route::prefix('services')->group(function () {
             Route::get('/', [AdminServiceController::class, 'get']);
             Route::get('{id}', [AdminServiceController::class, 'getById']);
-            Route::post('create', [AdminServiceController::class, 'create']);
-            Route::patch('update/{service}', [AdminServiceController::class, 'update']);
-            Route::delete('delete/{id}', [AdminServiceController::class, 'delete']);
+            Route::post('/', [AdminServiceController::class, 'create']);
+            Route::patch('{service}', [AdminServiceController::class, 'update']);
+            Route::delete('{id}', [AdminServiceController::class, 'delete']);
         });
         Route::prefix('users')->group(function () {
             Route::get('/', [AdminUserController::class, 'get']);
             Route::get('{id}', [AdminUserController::class, 'getById']);
-            Route::post('create', [AdminUserController::class, 'create']);
-            Route::patch('update/{user}', [AdminUserController::class, 'update']);
-            Route::delete('delete/{id}', [AdminUserController::class, 'delete']);
+            Route::post('/', [AdminUserController::class, 'create']);
+            Route::patch('{user}', [AdminUserController::class, 'update']);
+            Route::delete('{id}', [AdminUserController::class, 'delete']);
         });
     });
 });

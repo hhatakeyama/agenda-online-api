@@ -11,37 +11,68 @@ use App\Models\CompanyService;
 
 class CompanyController extends Controller
 {
-    public function get()
+    public function get(Request $request)
     {
-        Log::info("Searching all companies");
-        $companies = Company::with("organization", "companyEmployees", "companyServices")->paginate(10);
-        return response()->json([
-            "data" => $companies
-        ], 200);
-    }
-
-    public function getById($id)
-    {
-        try {
-            $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")->findOrFail($id);
-            Log::info("Searching company id", [$company]);
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Searching all companies", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            $search = $request->search;
+            $page = $request->page ? $request->page : 1;
+            $pageSize = $request->page_size ? $request->page_size : 10;
+            $companies = [];
+            if ($request->user()->type === 'g') {
+                $companies = Company::with("organization", "companyEmployees", "companyServices")
+                    ->where("name", "LIKE", "%$search%")
+                    ->where("organization_id", $request->user()->organization_id);
+            } else {
+                $companies = Company::with("organization", "companyEmployees", "companyServices")
+                    ->where("name", "LIKE", "%$search%");
+                if ($request->organization_id) {
+                    $companies = $companies->where("organization_id", $request->organization_id);
+                }
+            }
             return response()->json([
-                "data" => $company
+                "data" => $companies->paginate($pageSize, ['*'], 'page', $page)
             ], 200);
-        } catch(\Exception $e) {
-            Log::info("Company not found", [$id, $e->getMessage()]);
-            return response()->json([
-                "message" => "Unidade não encontrada."
-            ], 200);
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
+    public function getById(Request $request, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Searching company id", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $company = null;
+                if ($request->user()->type === 'g') {
+                    $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")
+                        ->where("organization_id", $request->user()->organization_id)
+                        ->where("id", $id)
+                        ->firstOrFail();
+                } else {
+                    $company = Company::with("companyEmployees.employee", "companyServices.service.serviceCategory", "daysOfWeeks", "city")->findOrFail($id);
+                }
+                return response()->json(["data" => $company], 200);
+            } catch (\Exception $e) {
+                Log::info("Company not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Unidade não encontrada."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    // Validar para type g
     public function create(Request $request)
     {
-        $allowedTypes = ['a', 's', 'g'];
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Creating company", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
-            Log::info("Creating company");
-            $validated = $request->validate([
+            $request->validate([
                 'name' => 'required|max:255',
                 'address' => 'required|max:255',
                 'district' => 'required|max:255',
@@ -54,41 +85,37 @@ class CompanyController extends Controller
                 'mobilePhone' => 'required|max:255',
             ]);
             $company = Company::create($request->all());
-            if($company->save()) {
+            if ($company->save()) {
                 Log::info("Company created");
 
-                if($request->daysOfWeek) {
-                    foreach($request->daysOfWeek as $dayOfWeek) {
+                if ($request->daysOfWeek) {
+                    foreach ($request->daysOfWeek as $dayOfWeek) {
                         $this->createDaysofWeek($company->id, $dayOfWeek);
                     }
                 }
 
-                if($request->services) {
-                    foreach($request->services as $service) {
+                if ($request->services) {
+                    foreach ($request->services as $service) {
                         $this->createServiceCompany($company->id, $service);
                     }
                 }
 
-                if($request->employees) {
-                    foreach($request->employees as $employee) {
+                if ($request->employees) {
+                    foreach ($request->employees as $employee) {
                         $this->createEmployeesOfCompany($company->id, $employee);
                     }
                 }
-                
-                return response()->json([
-                    "message" => "Unidade criada com sucesso",
-                ], 200);
+
+                return response()->json(["message" => "Unidade criada com sucesso"], 200);
             } else {
-                Log::error("Error create company", [$request]);
+                Log::error("Error create company", [$request->all()]);
                 return response()->json([
                     "message" => "Erro ao criar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
                 ], 400);
             }
         } else {
-            Log::error("User without permission", [$request]);
-            return response()->json([
-                "message" => "Usuário sem permissão para criar unidade.",
-            ], 400);
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
@@ -108,7 +135,7 @@ class CompanyController extends Controller
             'end_time_4' => $dayOfWeek['end_time_4'],
         ]);
 
-        if($day_of_week->save()){
+        if ($day_of_week->save()) {
             Log::info("Days of week's company created", [$day_of_week]);
         } else {
             Log::error("Error create days of week's company", [$dayOfWeek]);
@@ -129,7 +156,7 @@ class CompanyController extends Controller
             'email_message' => $service['email_message'],
             'sms_message' => $service['sms_message'],
         ]);
-        if($newService->save()){
+        if ($newService->save()) {
             Log::info("Service's company created", [$newService]);
         } else {
             Log::error("Error create company's employee", [$service]);
@@ -144,61 +171,68 @@ class CompanyController extends Controller
             'employee_id' => $employee_id,
         ]);
         $employee->company_id = $company_id;
-        if($employee->save()){
+        if ($employee->save()) {
             Log::info("Employee's company created", [$employee]);
         } else {
             Log::error("Error create employee's company", [$employee_id]);
         }
     }
 
+    // Validar para type g
     public function update(Request $request, Company $company)
     {
-        $allowedTypes = ['a', 's', 'g'];
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Updating company", [$request->company, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
-            Log::info("Updating company", [$request]);
+            // Validar validate
+            // $request->validate([
+            //     'name' => 'required|max:255',
+            //     'address' => 'required|max:255',
+            //     'district' => 'required|max:255',
+            //     'cep' => 'required|max:255',
+            //     'city_id' => 'required|max:255',
+            //     'state' => 'required|max:255',
+            //     'thumb' => 'required',
+            //     'organization_id' => 'required|integer',
+            //     'phone' => 'required|max:255',
+            //     'mobilePhone' => 'required|max:255',
+            // ]);
             $company->update($request->all());
-            if($company->save()) {
-                return response()->json([
-                    "message" => "Unidade atualizada com sucesso",
-                ], 200);
+            if ($company->save()) {
+                return response()->json(["message" => "Unidade atualizada com sucesso"], 200);
             } else {
-                Log::info("Error updating company", [$request]);
+                Log::info("Error updating company", [$request->all()]);
                 return response()->json([
                     "message" => "Erro ao atualizar unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
                 ], 400);
             }
         } else {
-            Log::error("User without permission", [$request]);
-            return response()->json([
-                "message" => "Usuário sem permissão para atualizar unidade.",
-            ], 400);
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 
+    // Validar para type g
     public function delete(Request $request, $id)
     {
-        $allowedTypes = ['a', 's', 'g'];
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Inativation of the company", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
-                $company = Company::findOrFail($id); 
-                Log::info("Inativation of the company $company");
+                $company = Company::findOrFail($id);
                 $company->status = 0;
                 $company->save();
                 Log::info("Company inactivated successfully");
-                return response()->json([
-                    "message" => "Unidade inativada com sucesso.",
-                ], 200);
-            } catch(\Exception $e) {
-                Log::error("Error inativation of the company $id");
+                return response()->json(["message" => "Unidade inativada com sucesso."], 200);
+            } catch (\Exception $e) {
+                Log::error("Error inativation of the company", [$e->getMessage()]);
                 return response()->json([
                     "message" => "Erro ao inativar unidade. Entre em contato com o administrador do site.",
                 ], 400);
             }
         } else {
-            Log::error("User without permission", [$request]);
-            return response()->json([
-                "message" => "Usuário sem permissão para inativar unidade.",
-            ], 400);
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 }

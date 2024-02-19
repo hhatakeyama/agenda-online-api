@@ -46,6 +46,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function organization()
+    {
+        return $this->belongsTo("App\Models\Organization", "organization_id", "id");
+    }
+
     public function companyEmployees()
     {
         return $this->hasMany("App\Models\CompanyEmployee", "employee_id", "id");
