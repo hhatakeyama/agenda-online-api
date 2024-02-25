@@ -13,6 +13,124 @@ use App\Models\ScheduleItem;
 
 class ScheduleController extends Controller
 {
+    public function get(Request $request)
+    {
+        $allowedTypes = ['g', 'f'];
+        Log::info("Searching all schedules", [$request->user()]);
+        if ($request->user()) {
+            $search = $request->search;
+            $page = $request->page ? $request->page : 1;
+            $pageSize = $request->page_size ? $request->page_size : 10;
+            $orderBy = $request->order_by ? $request->order_by : 'date';
+            $company = $request->company ? $request->company : '';
+            $date = $request->date ? $request->date : '';
+            $schedules = [];
+            Log::info("Searching all schedules", [$request->user()]);
+            if (in_array($request->user()->type, $allowedTypes)) {
+                $schedules = Schedule::with("scheduleItems.employee", "scheduleItems.service", "client")
+                    ->whereHas("client", function ($query) use ($search) {
+                        $query->where("name", "LIKE", "%$search%");
+                    })
+                    ->whereHas("company", function ($query) use ($request) {
+                        $query->where("organization_id", $request->user()->organization_id);
+                    });
+            } else {
+                $schedules = Schedule::with("scheduleItems.employee", "scheduleItems.service", "client")
+                    ->whereHas("client", function ($query) use ($search) {
+                        $query->where("name", "LIKE", "%$search%");
+                    });
+                // if ($request->organization_id) {
+                //     $schedules = $schedules->where("organization_id", $request->organization_id);
+                // }
+            }
+            if ($company) {
+                $schedules = $schedules->where("company_id", $company);
+            }
+            if ($date) {
+                $schedules = $schedules->where("date", $date);
+            }
+            if ($orderBy) {
+                $schedules = $schedules->orderBy($orderBy, "DESC");
+            }
+            return response()->json([
+                "data" => $schedules->paginate($pageSize, ['*'], 'page', $page)
+            ], 200);
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function getCalendar(Request $request)
+    {
+        $allowedTypes = ['g', 'f'];
+        Log::info("Searching all schedules", [$request->user()]);
+        if ($request->user()) {
+            $search = $request->search;
+            $company = $request->company ? $request->company : '';
+            $date = $request->date ? $request->date : '';
+            $schedules = [];
+            Log::info("Searching all schedules", [$request->user()]);
+            if (in_array($request->user()->type, $allowedTypes)) {
+                $schedules = ScheduleItem::with("employee", "service", "schedule.client")
+                    ->whereHas("schedule.client", function ($query) use ($search) {
+                        $query->where("name", "LIKE", "%$search%");
+                    })
+                    ->whereHas("schedule.company", function ($query) use ($request) {
+                        $query->where("organization_id", $request->user()->organization_id);
+                    });
+            } else {
+                $schedules = ScheduleItem::with("employee", "service", "schedule.client")
+                    ->whereHas("schedule.client", function ($query) use ($search) {
+                        $query->where("name", "LIKE", "%$search%");
+                    });
+                // if ($request->organization_id) {
+                //     $schedules = $schedules->where("organization_id", $request->organization_id);
+                // }
+            }
+            if ($company) {
+                $schedules = $schedules->whereHas("schedule", function ($query) use ($company) {
+                    $query->where("company_id", $company);
+                });
+            }
+            if ($date) {
+                $schedules = $schedules->whereHas("schedule", function ($query) use ($date) {
+                    $query->where("date", $date);
+                });
+            }
+            return response()->json(["data" => $schedules->get()], 200);
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function getById(Request $request, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Searching schedule id", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $schedule = null;
+                if ($request->user()->type === 'g') {
+                    $schedule = Schedule::with("scheduleItems")
+                        // ->where("organization_id", $request->user()->organization_id)
+                        ->where("id", $id)
+                        ->firstOrFail();
+                } else {
+                    $schedule = Schedule::findOrFail($id);
+                }
+                return response()->json(["data" => $schedule], 200);
+            } catch (\Exception $e) {
+                Log::info("Schedule not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Agendamento não encontrada."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
     public function create(Request $request)
     {
         Log::info("Creating schedule", [$request]);

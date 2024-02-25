@@ -71,9 +71,8 @@ class ScheduleController extends Controller
         $date = $request->date;
         $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
-        $services = $request->services ? explode(",", $request->services) : [];
         $employees = $request->employees ? explode(",", $request->employees) : [];
-        Log::info("List all unavailable schedules", [$company, $services]);
+        Log::info("List all unavailable schedules", [$company]);
 
         // List all employees scheduled periods
         $employeesScheduledPeriods = ScheduleItem::with("schedule")

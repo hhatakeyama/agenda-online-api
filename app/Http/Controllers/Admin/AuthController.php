@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class AuthController extends Controller
 {
     public function login(Request $request){
-        Log::info("request", [$request]);
+        Log::info("Login attempt", [$request->email]);
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],

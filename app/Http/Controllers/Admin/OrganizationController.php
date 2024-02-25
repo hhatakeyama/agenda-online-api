@@ -29,11 +29,16 @@ class OrganizationController extends Controller
 
     public function getById(Request $request, $id)
     {
-        $allowedTypes = ['s', 'a'];
+        $allowedTypes = ['g', 'f'];
         Log::info("Searching organization id", [$id, $request->user()]);
-        if ($request->user()->type && in_array($request->user()->type, $allowedTypes)) {
+        if ($request->user()) {
             try {
-                $organization = Organization::findOrFail($id);
+                $organization = [];
+                if ($request->user()->type && in_array($request->user()->type, $allowedTypes)) {
+                    $organization = Organization::findOrFail($request->user()->organization_id);
+                } else {
+                    $organization = Organization::findOrFail($id);
+                }
                 return response()->json(["data" => $organization], 200);
             } catch (\Exception $e) {
                 Log::error("Error searching organization");
