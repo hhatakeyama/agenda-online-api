@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +15,8 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+        $credentials = $request->only(['email', 'password']);
+        Log::info("credentials", [$credentials]);
         if (Auth::attempt($credentials)) {
             Log::info("user logged", [$request->email]);
             $request->user()->tokens()->where('name', $request->email)->delete();
