@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -11,19 +12,13 @@ class AuthController extends Controller
 {
     public function login(Request $request){
         Log::info("Login attempt", [$request->email]);
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
         $credentials = $request->only(['email', 'password']);
         Log::info("credentials", [$credentials]);
         if (Auth::attempt($credentials)) {
             Log::info("user logged", [$request->email]);
             $request->user()->tokens()->where('name', $request->email)->delete();
             $token = $request->user()->createToken($request->email);
-            return response()->json([
-                'token' => $token->plainTextToken,
-            ], 200);
+            return response()->json(['token' => $token->plainTextToken], 200);
         } else {
             Log::error("Error login user", [$request]);
             return response()->json([
