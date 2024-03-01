@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use App\Models\User;
 use App\Models\EmployeeService;
 use App\Models\Organization;
-use Illuminate\Support\Facades\Mail;
 
 class EmployeeController extends Controller
 {
@@ -22,13 +24,14 @@ class EmployeeController extends Controller
             $pageSize = $request->page_size ? $request->page_size : 10;
             $employees = [];
             if ($request->user()->type === 'g') {
-                $employees = User::where("type", "f")
+                $employees = User::with("employeeServices")
+                    ->where("type", "f")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
                     })
                     ->where("organization_id", $request->user()->organization_id);
             } else {
-                $employees = User::with("organization")
+                $employees = User::with("organization", "employeeServices")
                     ->where("type", "f")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
@@ -54,12 +57,14 @@ class EmployeeController extends Controller
             try {
                 $employee = null;
                 if ($request->user()->type === 'g') {
-                    $employee = User::where("organization_id", $request->user()->organization_id)
+                    $employee = User::with("employeeServices.service")
+                        ->where("organization_id", $request->user()->organization_id)
                         ->where("type", "f")
                         ->where("id", $id)
                         ->firstOrFail();
                 } else {
-                    $employee = User::where("type", "f")
+                    $employee = User::with("employeeServices.service")
+                        ->where("type", "f")
                         ->where("id", $id)
                         ->firstOrFail();
                 }
@@ -79,49 +84,44 @@ class EmployeeController extends Controller
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Creating employee", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
-            try {
-                $request->validate([
-                    'name' => 'required|max:255',
-                    'email' => 'required|email|max:255',
-                    'password' => 'required|max:255',
-                    'occupation' => 'max:255',
-                    'type' => 'required',
-                    'organization_id' => 'required|integer',
-                ]);
-                $employee = User::create($request->all());
-                $employee->password = Hash::make($request->password);
-                if ($employee->save()) {
-                    Log::info("Employee created");
-                    if ($request->services) {
-                        foreach ($request->services as $service_id) {
-                            $this->createServicesEmployee($employee->id, $service_id);
-                        }
+            $request->validate([
+                'name' => 'required|max:255',
+                'email' => 'required|email|unique:App\Models\User,email|max:255',
+                'password' => 'required|max:255',
+                'occupation' => 'max:255',
+                'type' => 'required',
+                'organization_id' => 'required|integer',
+            ], [
+                "email.unique" => "E-mail já utilizado",
+            ]);
+            $employee = User::create($request->all());
+            $employee->password = Hash::make($request->password);
+            if ($employee->save()) {
+                Log::info("Employee created");
+                if ($request->services) {
+                    foreach ($request->services as $service_id) {
+                        $this->createServicesEmployee($employee->id, $service_id);
                     }
-                    $organization = Organization::find($request->organization_id);
-                    $data = [
-                        'name' => $employee->name,
-                        'organization' => $organization->name,
-                    ];
-                    try {
-                        Mail::send('mails.novofuncionario', $data, function ($message) use ($employee) {
-                            $message->to($employee->email);
-                            $message->subject('Skedyou - Novo usuário');
-                            $message->from('suporte@skedyou.com', 'Equipe Skedyou');
-                        });
-                    } catch (\Exception $e) {
-                        Log::error("Mail not sent", [$e->getMessage()]);
-                    }
-                    return response()->json(["message" => "Funcionário criado com sucesso"], 200);
-                } else {
-                    Log::error("Error create employee", [$request->all()]);
-                    return response()->json([
-                        "message" => "Erro ao criar servico. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-                    ], 400);
                 }
-            } catch (\Exception $e) {
-                Log::error("Error creating employee", [$e->getMessage()]);
+                $organization = Organization::find($request->organization_id);
+                $data = [
+                    'name' => $employee->name,
+                    'organization' => $organization->name,
+                ];
+                try {
+                    Mail::send('mails.novofuncionario', $data, function ($message) use ($employee) {
+                        $message->to($employee->email);
+                        $message->subject('Skedyou - Novo usuário');
+                        $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+                    });
+                } catch (\Exception $e) {
+                    Log::error("Mail not sent", [$e->getMessage()]);
+                }
+                return response()->json(["message" => "Funcionário criado com sucesso"], 200);
+            } else {
+                Log::error("Error create employee", [$request->all()]);
                 return response()->json([
-                    "message" => "Erro ao criar funcionário. Entre em contato com o administrador do site.",
+                    "message" => "Erro ao criar funcionário. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
                 ], 400);
             }
         } else {
@@ -149,9 +149,32 @@ class EmployeeController extends Controller
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating employee", [$request->employee, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
+            $emailFilled = $employee->email != $request->email;
+            $validations = [
+                'name' => 'required|max:255',
+                'email' => 'required|max:255',
+                'occupation' => 'max:255',
+                'type' => 'required',
+                'organization_id' => 'required|integer',
+            ];
+            if ($emailFilled) {
+                $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:App\Models\User,email'];
+            }
+            if ($request->password) {
+                $validations['password'] = ['required', 'string', 'confirmed'];
+            }
+            $request->validate($validations, [
+                "email.unique" => "E-mail já utilizado",
+            ]);
             $employee->update($request->all());
             if ($employee->save()) {
                 Log::info("Employee updated");
+                if ($request->services) {
+                    $employee->employeeServices()->delete();
+                    foreach ($request->services as $service_id) {
+                        $this->createServicesEmployee($employee->id, $service_id);
+                    }
+                }
                 return response()->json(["message" => "Funcionário atualizado com sucesso"], 200);
             } else {
                 Log::info("Error updating employee", [$request->all()]);
@@ -161,6 +184,39 @@ class EmployeeController extends Controller
             }
         } else {
             Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function updatePicture(Request $request, User $employee)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Updating photo", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $file = $request->file;
+                $extensao = $file->extension();
+                $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
+                $filehash = uniqid(date('HisYmd'));
+                $filename = $filehash . "." . $extensao;
+
+                $filePath = "app/public/employees/";
+                $this->gerarFotos($filePath, $filehash, $extensao, $file);
+                $employee->picture = $filename;
+            } catch (\Exception $e) {
+                Log::error("Erro upload foto: " . $e->getMessage());
+                return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
+            }
+            if ($employee->save()) {
+                return response()->json(["message" => "Foto atualizada com sucesso"], 200);
+            } else {
+                Log::info("Error updating photo", [$request]);
+                return response()->json([
+                    "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
+        } else {
+            Log::info("User without permission, tried to update picture");
             return response()->json(["message" => "Unauthorized"], 401);
         }
     }
@@ -185,6 +241,65 @@ class EmployeeController extends Controller
         } else {
             Log::info("Error updating employee");
             return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    // Funções locais
+    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
+    {
+        $filename = $filehash . "." . $extensao;
+        //Tamanho original
+        $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
+            "rotate" => $rotate
+        ), 100);
+        //Tamanho 84x84px
+        $this->cropImage($filePath, $filename, $extensao, $file, 84, 84, array(
+            "rotate" => 0,
+            "crop" => true
+        ));
+        //Tamanho 84x84px webp
+        // $this->cropImage($filePath, $filehash . ".webp", "webp", $file, 84, 84, array(
+        //     "rotate" => 0,
+        //     "crop" => true
+        // ));
+    }
+
+    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
+    {
+        Log::info("Gerando foto: ", [$filePath, $filename]);
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read($file);
+
+        try {
+            if ($extensao == "webp") {
+                $img->encode($extensao);
+            }
+
+            if (isset($options["rotate"]) && $options["rotate"] != 0) {
+                $img->rotate($options["rotate"]);
+            }
+
+            if (isset($options["crop"]) && $options["crop"]) {
+                $dim = (intval($img->width()) / intval($img->height())) - ($imgWidth / $imgHeight);
+                if ($dim > 0) {
+                    $img->resize(null, $imgHeight, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas(null, $imgHeight, 'center', true, 'ffffff');
+                } else {
+                    $img->resize($imgWidth, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas($imgWidth, null, 'center', true, 'ffffff');
+                }
+                $img->crop($imgWidth, $imgHeight);
+
+                $filename = $imgWidth . "x" . $imgHeight . "-" . $filename;
+            }
+
+            $img->save(storage_path($filePath . $filename), $qualidade);
+        } catch (\Exception $e) {
+            Log::info("Erro ao gerar foto", [$e->getMessage()]);
         }
     }
 }

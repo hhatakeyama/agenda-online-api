@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use App\Models\Company;
 use App\Models\CompanyDaysOfWeek;
 use App\Models\CompanyEmployee;
@@ -79,7 +81,6 @@ class CompanyController extends Controller
                 'cep' => 'required|max:255',
                 'city_id' => 'required|max:255',
                 'state' => 'required|max:255',
-                'thumb' => 'required',
                 'organization_id' => 'required|integer',
                 'phone' => 'required|max:255',
                 'mobilePhone' => 'required|max:255',
@@ -212,6 +213,39 @@ class CompanyController extends Controller
         }
     }
 
+    public function updateThumb(Request $request, Company $company)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Updating photo", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $file = $request->file;
+                $extensao = $file->extension();
+                $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
+                $filehash = uniqid(date('HisYmd'));
+                $filename = $filehash . "." . $extensao;
+
+                $filePath = "app/public/companies/";
+                $this->gerarFotos($filePath, $filehash, $extensao, $file);
+                $company->thumb = $filename;
+            } catch (\Exception $e) {
+                Log::error("Erro upload foto: " . $e->getMessage());
+                return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
+            }
+            if ($company->save()) {
+                return response()->json(["message" => "Foto atualizada com sucesso"], 200);
+            } else {
+                Log::info("Error updating photo", [$request]);
+                return response()->json([
+                    "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                ], 400);
+            }
+        } else {
+            Log::info("User without permission, tried to update picture");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
     // Validar para type g
     public function delete(Request $request, $id)
     {
@@ -233,6 +267,65 @@ class CompanyController extends Controller
         } else {
             Log::error("User without permission");
             return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+    
+    // Funções locais
+    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
+    {
+        $filename = $filehash . "." . $extensao;
+        //Tamanho original
+        $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
+            "rotate" => $rotate
+        ), 100);
+        //Tamanho 84x84px
+        $this->cropImage($filePath, $filename, $extensao, $file, 733, 100, array(
+            "rotate" => 0,
+            "crop" => true
+        ));
+        //Tamanho 84x84px webp
+        // $this->cropImage($filePath, $filehash . ".webp", "webp", $file, 84, 84, array(
+        //     "rotate" => 0,
+        //     "crop" => true
+        // ));
+    }
+
+    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
+    {
+        Log::info("Gerando foto: ", [$filePath, $filename]);
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read($file);
+
+        try {
+            if ($extensao == "webp") {
+                $img->encode($extensao);
+            }
+
+            if (isset($options["rotate"]) && $options["rotate"] != 0) {
+                $img->rotate($options["rotate"]);
+            }
+
+            if (isset($options["crop"]) && $options["crop"]) {
+                $dim = (intval($img->width()) / intval($img->height())) - ($imgWidth / $imgHeight);
+                if ($dim > 0) {
+                    $img->resize(null, $imgHeight, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas(null, $imgHeight, 'center', true, 'ffffff');
+                } else {
+                    $img->resize($imgWidth, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                    $img->resizeCanvas($imgWidth, null, 'center', true, 'ffffff');
+                }
+                $img->crop($imgWidth, $imgHeight);
+
+                $filename = $imgWidth . "x" . $imgHeight . "-" . $filename;
+            }
+
+            $img->save(storage_path($filePath . $filename), $qualidade);
+        } catch (\Exception $e) {
+            Log::info("Erro ao gerar foto", [$e->getMessage()]);
         }
     }
 }

@@ -101,6 +101,7 @@ Route::prefix('admin')->group(function () {
             Route::get('{id}', [AdminCompanyController::class, 'getById']);
             Route::post('/', [AdminCompanyController::class, 'create']);
             Route::patch('{company}', [AdminCompanyController::class, 'update']);
+            Route::post('{company}/thumb', [AdminCompanyController::class, 'updateThumb']);
             Route::delete('{id}', [AdminCompanyController::class, 'delete']);
         });
         Route::prefix('employees')->group(function () {
@@ -108,6 +109,7 @@ Route::prefix('admin')->group(function () {
             Route::get('{id}', [AdminEmployeeController::class, 'getById']);
             Route::post('/', [AdminEmployeeController::class, 'create']);
             Route::patch('{employee}', [AdminEmployeeController::class, 'update']);
+            Route::post('{employee}/picture', [AdminEmployeeController::class, 'updatePicture']);
             Route::delete('{id}', [AdminEmployeeController::class, 'delete']);
         });
         Route::prefix('organizations')->group(function () {
@@ -144,6 +146,7 @@ Route::prefix('admin')->group(function () {
             Route::get('{id}', [AdminUserController::class, 'getById']);
             Route::post('/', [AdminUserController::class, 'create']);
             Route::patch('{user}', [AdminUserController::class, 'update']);
+            Route::post('{user}/picture', [AdminUserController::class, 'updatePicture']);
             Route::delete('{id}', [AdminUserController::class, 'delete']);
         });
     });

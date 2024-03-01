@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('cep');
             $table->integer('city_id');
             $table->string('state')->max(2);
-            $table->string('thumb');
+            $table->string('thumb')->nullable();
             $table->unsignedBigInteger('organization_id');
             $table->string('email');
             $table->string('phone');

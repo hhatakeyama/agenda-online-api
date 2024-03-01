@@ -139,7 +139,7 @@ class ClientController extends Controller
     public function updatePicture(Request $request, Client $client)
     {
         $allowedTypes = ['s', 'a'];
-        Log::info("Updating photo", [$request->client, $request->user()]);
+        Log::info("Updating photo", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $file = $request->file;
