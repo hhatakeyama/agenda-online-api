@@ -41,7 +41,7 @@ Route::get('cities', [CityController::class, 'get']);
 Route::prefix('site')->group(function () {
     // Public routes
     Route::prefix('clients')->group(function () {
-        Route::post('create', [ClientController::class, 'create']);
+        Route::post('/', [ClientController::class, 'create']);
     });
     Route::prefix('companies')->group(function () {
         Route::get('{id}', [CompanyController::class, 'getAllDataFromCompany']);
@@ -51,7 +51,7 @@ Route::prefix('site')->group(function () {
     });
     Route::prefix('schedules')->group(function () {
         Route::get('unavailables', [ScheduleController::class, 'unavailables']);
-        Route::post('create', [ScheduleController::class, 'create']);
+        Route::post('/', [ScheduleController::class, 'create']);
         Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
         Route::get('sendSms', [ScheduleController::class, 'sendMessage']);
         Route::get('responseSms', [ScheduleController::class, 'responseMessage']);
@@ -68,13 +68,13 @@ Route::prefix('site')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
 
         Route::prefix('clients')->group(function () {
-            Route::patch('update/{client}', [ClientController::class, 'update']);
-            Route::post('update/{client}/picture', [ClientController::class, 'updatePicture']);
+            Route::patch('{client}', [ClientController::class, 'update']);
+            Route::post('{client}/picture', [ClientController::class, 'updatePicture']);
         });
         Route::prefix('schedules')->group(function () {
             Route::get('client/{client_id}', [ScheduleController::class, 'getSheduleFromClient']);
             Route::patch('update', [ScheduleController::class, 'update']);
-            Route::delete('delete/{id}', [ScheduleController::class, 'delete']);
+            Route::delete('{id}', [ScheduleController::class, 'delete']);
         });
     });
 });
@@ -130,8 +130,8 @@ Route::prefix('admin')->group(function () {
             Route::get('/', [AdminScheduleController::class, 'get']);
             Route::get('calendar', [AdminScheduleController::class, 'getCalendar']);
             Route::get('{id}', [AdminScheduleController::class, 'getById']);
-            Route::post('create', [AdminScheduleController::class, 'create']);
-            Route::patch('update/{schedule}', [AdminScheduleController::class, 'update']);
+            Route::post('/', [AdminScheduleController::class, 'create']);
+            Route::patch('{schedule}', [AdminScheduleController::class, 'update']);
             Route::delete('delete/{id}', [AdminScheduleController::class, 'delete']);
         });
         Route::prefix('services')->group(function () {
