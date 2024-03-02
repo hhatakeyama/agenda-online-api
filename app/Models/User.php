@@ -65,4 +65,13 @@ class User extends Authenticatable
     {
         return $this->hasMany("App\Models\ScheduleItem", "employee_id", "id");
     }
+    
+    // this is a recommended way to declare event handlers
+    protected static function booted () {
+        static::deleting(function(User $user) { // before delete() method call this
+             $user->employeeServices()->delete();
+             $user->companyEmployees()->delete();
+             // do the rest of the cleanup...
+        });
+    }
 }

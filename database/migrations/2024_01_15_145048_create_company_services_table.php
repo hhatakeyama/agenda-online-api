@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('service_id');
-            $table->decimal('price', 10, 2);
-            $table->string('duration');
-            $table->string('description');
+            $table->decimal('price', 10, 2)->nullable();
+            $table->string('duration')->nullable();
+            $table->string('description')->nullable();
             $table->string('email_message')->nullable();
             $table->string('sms_message')->nullable();
             $table->tinyInteger('send_email')->default(0);

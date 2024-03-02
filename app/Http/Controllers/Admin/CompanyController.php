@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\CompanyDaysOfWeek;
 use App\Models\CompanyEmployee;
 use App\Models\CompanyService;
+use App\Models\Service;
 
 class CompanyController extends Controller
 {
@@ -145,7 +146,7 @@ class CompanyController extends Controller
 
     private function createServiceCompany($company_id, $service)
     {
-        Log::info("Service's company", [$service]);
+        Log::info("Create Company Service", [$service]);
         $newService = CompanyService::create([
             'company_id' => $company_id,
             'service_id' => $service['service_id'],
@@ -262,6 +263,67 @@ class CompanyController extends Controller
                 Log::error("Error inativation of the company", [$e->getMessage()]);
                 return response()->json([
                     "message" => "Erro ao inativar unidade. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+    
+    public function createService(Request $request, Company $company)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Add company service", [$company->id, $request->service_id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $service = Service::findOrFail($request->service_id);
+                $newService = CompanyService::create([
+                    'company_id' => $company->id,
+                    'service_id' => $request->service_id,
+                    'price' => $service['price'],
+                    'duration' => $service['duration'],
+                    'description' => $service['description'],
+                    'send_email' => $service['send_email'],
+                    'send_sms' => $service["send_sms"],
+                    'email_message' => $service['email_message'],
+                    'sms_message' => $service['sms_message'],
+                ]);
+                if ($newService->save()) {
+                    Log::info("Company Service added successfully", [$newService]);
+                    return response()->json(["message" => "Serviço adicionado com sucesso."], 200);
+                } else {
+                    Log::error("Error adding company service", [$service]);
+                    return response()->json([
+                        "message" => "Erro ao adicionar serviço da unidade. Entre em contato com o administrador do site.",
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                Log::error("Error adding company service", [$e->getMessage()]);
+                return response()->json([
+                    "message" => "Erro ao adicionar serviço da unidade. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+    
+    public function deleteService(Request $request, Company $company, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Delete company service", [$company->id, $id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $companyService = CompanyService::where("company_id", $company->id)->where("service_id", $id)->firstOrFail();
+                $companyService->delete();
+                Log::info("Company Service removed successfully");
+                return response()->json(["message" => "Serviço removido com sucesso."], 200);
+            } catch (\Exception $e) {
+                Log::error("Error removing company service", [$e->getMessage()]);
+                return response()->json([
+                    "message" => "Erro ao remover serviço da unidade. Entre em contato com o administrador do site.",
                 ], 400);
             }
         } else {
