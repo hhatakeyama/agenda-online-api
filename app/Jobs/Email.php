@@ -19,19 +19,21 @@ class Email implements ShouldQueue
      * Create a new job instance.
      */
     public $schedule;
-    public $smsController;
+    public $scheduleItems;
 
-    public function __construct($schedule)
+    public function __construct($schedule, $items)
     {
         $this->schedule = $schedule;
+        $this->scheduleItems = $items;
     }
 
     public function handle(): void
     {
         Log::info('Enviando email para ' . $this->schedule->client->name);
-        Mail::send('mails.confirmacao', ['schedule' => $this->schedule], function($message) {
+        $confirmationUrl = env("SITE_URL") . "/confirm-schedule?hash=" . $this->schedule->confirmed_hash;
+        Mail::send('mails.confirmation', ['schedule' => $this->schedule, 'scheduleItems' => $this->scheduleItems, 'confirmationUrl' => $confirmationUrl], function($message) {
             $message->to($this->schedule->client->email);
-            $message->subject('Skedyou -Confirmação de agendamento!');
+            $message->subject('Skedyou - Confirmação de agendamento!');
             $message->from('suporte@skedyou.com','Equipe Skedyou'); 
         });
     }

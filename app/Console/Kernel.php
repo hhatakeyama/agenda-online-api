@@ -13,13 +13,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        date_default_timezone_set('America/Sao_Paulo');
         $schedule->call(function () {
             Log::info('Job executado' . date("Y-m-d H:i:s"));
 
-            date_default_timezone_set('America/Sao_Paulo');
-            $hoje = date("Y-m-d");
-            $hoje->add(new \DateInterval('P1D'));
-            $proximaData = $hoje->format('Y-m-d');
+            $proximaData = date("Y-m-d", strtotime(date("Y-m-d") . ' + 1 days'));
 
             $schedules = Schedule::with('client')->where("date", $proximaData)->where("confirmed", "0")->get();
             foreach ($schedules as $schedule) {

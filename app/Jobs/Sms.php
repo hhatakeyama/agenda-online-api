@@ -24,7 +24,7 @@ class Sms implements ShouldQueue
     public function __construct($schedule)
     {
         $this->schedule = $schedule;
-        $this->$smsController = new SMSController();
+        $this->smsController = new SMSController();
     }
 
     /**
@@ -36,13 +36,13 @@ class Sms implements ShouldQueue
         $telefone = preg_replace('/[^0-9]+/i', '', $this->schedule->client->mobilePhone);
 
         //o numero precisa ser de celular e o horario de agendamento precisa estar preenchido
-        if (empty($this->schedule->client->mobilePhone)){
-            Log::info("SMS não enviado, horário de agendamento não preenchido ou cliente sem celular", [$this->schedule]);
+        if (empty($this->schedule->client->mobilePhone)) {
+            Log::info("SMS não enviado, cliente não preencheu o celular", [$this->schedule]);
             return;
         }
 
         $message = 'Olá, ' . $this->schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($this->schedule->date)) . ' às ' . date("H:i", strtotime($this->schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
-        
-        $smsController->sendMessage($this->schedule, $message);
+
+        $this->smsController->sendMessage($this->schedule, $message);
     }
 }

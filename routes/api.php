@@ -55,7 +55,7 @@ Route::prefix('site')->group(function () {
         Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
         Route::get('sendSms', [ScheduleController::class, 'sendMessage']);
         Route::get('responseSms', [ScheduleController::class, 'responseMessage']);
-        Route::get('confirmShedule', [ScheduleController::class, 'confirmationScheudleMessage']);
+        Route::post('confirmSchedule', [ScheduleController::class, 'confirmSchedule']);
     });
     Route::prefix('schedules-from-employee')->group(function () {
         Route::get('/', [ScheduleController::class, 'getSchedulesFromEmployeesBeginningToday']);

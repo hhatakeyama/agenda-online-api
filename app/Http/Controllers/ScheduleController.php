@@ -12,6 +12,7 @@ use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use App\Models\Service;
 use App\Models\User;
+use Exception;
 
 class ScheduleController extends Controller
 {
@@ -127,6 +128,8 @@ class ScheduleController extends Controller
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
                 $message->from('suporte@skedyou.com', 'Equipe Skedyou');
             });
+            \App\Jobs\Sms::dispatch($schedule, $request->items);
+            \App\Jobs\Email::dispatch($schedule, $request->items);
 
             Log::info("Schedule created", [$schedule]);
             return response()->json([
@@ -180,6 +183,36 @@ class ScheduleController extends Controller
         }
     }
 
+    public function confirmSchedule(Request $request)
+    {
+        Log::info("Confirming schedule", [$request->hash]);
+        try {
+            $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
+            ->where("confirmed_hash", $request->hash)
+            ->firstOrFail();
+            $schedule->confirmed = "1";
+            if ($schedule->save()) {
+                Log::info("Schedule confirmed", [$schedule]);
+                return response()->json(["message" => "Agendamento confirmado com sucesso!"], 200);
+            } else {
+                Log::error("Schedule not saved", [$schedule]);
+                return response()->json(["message" => "Erro ao confirmar agendamento. Tente novamente mais tarde."], 500);
+            }
+        } catch (Exception $e) {
+            Log::error("Error confirming schedule", [$e->getMessage()]);
+            return response()->json(["data" => $schedule], 403);
+        }
+    }
+
+    public function getByHash(Request $request)
+    {
+        Log::info("Searching schedule by hash", [$request->hash]);
+        $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
+            ->where("confirmed_hash", $request->hash)
+            ->firstOrFail();
+        return response()->json(["data" => $schedule], 200);
+    }
+
     public function delete(Request $request)
     {
         $schedule = Schedule::find($request->id);
@@ -195,13 +228,4 @@ class ScheduleController extends Controller
             ], 400);
         }
     }
-
-    // public function getAllSchedulesTodayToSentMessage()
-    // {
-    //     $schedules = Schedule::with('client')->where("date", date("Y-m-d"))->where("confirmed", "0")->get();
-    //     $message = 'Olá, ' . $schedule->client->name . ' seu agendamento para o dia ' . date("d/m/Y", strtotime($schedule->date)) . ' às ' . date("H:i", strtotime($schedule->start_time)) . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
-    //     foreach ($schedules as $schedule) {
-    //         $this->sendMessage($schedule, $message);
-    //     }
-    // }
 }

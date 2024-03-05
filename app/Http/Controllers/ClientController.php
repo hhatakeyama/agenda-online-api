@@ -24,10 +24,12 @@ class ClientController extends Controller
     public function create(Request $request)
     {
         Log::info("Creating client");
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|unique:App\Models\Client,email|max:255',
             'password' => 'required|confirmed|max:255',
+        ], [
+            "email.unique" => "E-mail já cadastrado",
         ]);
         $client = Client::create($request->all());
         $client->password = Hash::make($request->password);
@@ -75,14 +77,16 @@ class ClientController extends Controller
         ];
         $client->name = $request->name;
         if ($emailFilled) {
-            $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:clients'];
+            $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:App\Models\Client,email'];
             $client->email = $request->email;
         }
         if ($request->password) {
             $validations['password'] = ['required', 'string', 'confirmed'];
             $client->password = Hash::make($request->password);
         }
-        $request->validate($validations);
+        $request->validate($validations, [
+            "email.unique" => "E-mail já cadastrado",
+        ]);
         if ($client->save()) {
             return response()->json([
                 "message" => "Cliente atualizada com sucesso",
