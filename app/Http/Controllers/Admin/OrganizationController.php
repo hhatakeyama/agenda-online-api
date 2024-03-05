@@ -57,10 +57,10 @@ class OrganizationController extends Controller
         if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Creating organization");
             $request->validate([
-                'registeredName' => 'required|unique:organizations,registeredName|max:255',
-                'slug' => 'required|unique:organizations,slug|max:255',
-                'tradingName' => 'required|unique:organizations,tradingName|max:255',
-                'cnpj' => 'required|unique:organizations,cnpj|max:20',
+                'registeredName' => 'required|unique:App\Models\Organization,registeredName|max:255',
+                'slug' => 'required|unique:App\Models\Organization,slug|max:255',
+                'tradingName' => 'required|unique:App\Models\Organization,tradingName|max:255',
+                'cnpj' => 'required|unique:App\Models\Organization,cnpj|max:20',
             ], [
                 "registeredName.unique" => "Razão Social já existe; ",
                 "slug.unique" => "Slug já existe; ",
@@ -87,28 +87,57 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $allowedTypes = ['s', 'a', 'g'];
-        Log::info("Updating organization", [$request->organization, $request->user()]);
+        Log::info("Updating organization", [$organization, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
-            // Validar validate
-            // $request->validate([
-            //     'registeredName' => 'required|unique:organizations,registeredName|max:255',
-            //     'slug' => 'required|unique:organizations,slug|max:255',
-            //     'tradingName' => 'required|unique:organizations,tradingName|max:255',
-            //     'cnpj' => 'required|unique:organizations,cnpj|max:20',
-            // ], [
-            //     "registeredName.unique" => "Razão Social já existe; ",
-            //     "slug.unique" => "Slug já existe; ",
-            //     "tradingName.unique" => "Nome Fantasia já existe; ",
-            //     "cnpj.unique" => "CNPJ já existe; ",
-            // ]);
-            $organization->update($request->all());
-            if ($organization->save()) {
-                return response()->json(["message" => "Empresa atualizada com sucesso"], 200);
+            $registeredNameFilled = $organization->registeredName != $request->registeredName;
+            $tradingNameFilled = $organization->tradingName != $request->tradingName;
+            $slugFilled = $organization->slug != $request->slug;
+            $cnpjFilled = $organization->cnpj != $request->cnpj;
+            $validations = [];
+            if ($registeredNameFilled) {
+                $validations['registeredName'] = ['required', 'string', 'max:255', 'unique:App\Models\Organization,registeredName'];
+            }
+            if ($tradingNameFilled) {
+                $validations['tradingName'] = ['required', 'string', 'max:255', 'unique:App\Models\Organization,tradingName'];
+            }
+            if ($slugFilled) {
+                $validations['slug'] = ['required', 'string', 'max:255', 'unique:App\Models\Organization,slug'];
+            }
+            if ($cnpjFilled) {
+                $validations['cnpj'] = ['required', 'string', 'max:255', 'unique:App\Models\Organization,cnpj'];
+            }
+            $request->validate($validations, [
+                "registeredName.unique" => "Razão Social já existe; ",
+                "slug.unique" => "Slug já existe; ",
+                "tradingName.unique" => "Nome Fantasia já existe; ",
+                "cnpj.unique" => "CNPJ já existe; ",
+            ]);
+            if ($request->user()->type && in_array($request->user()->type, ['g'])) {
+                $organization = Organization::where("id", $request->user()->organization_id)->firstOrFail();
+                if ($organization) {
+                    $organization->update($request->all());
+                    if ($organization->save()) {
+                        return response()->json(["message" => "Empresa atualizada com sucesso"], 200);
+                    } else {
+                        Log::info("Error updating organization", [$request->all()]);
+                        return response()->json([
+                            "message" => "Erro ao atualizar Empresa. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                        ], 400);
+                    }
+                } else {
+                    Log::error("User without permission");
+                    return response()->json(["message" => "Unauthorized"], 401);
+                }
             } else {
-                Log::info("Error updating organization", [$request->all()]);
-                return response()->json([
-                    "message" => "Erro ao atualizar Empresa. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-                ], 400);
+                $organization->update($request->all());
+                if ($organization->save()) {
+                    return response()->json(["message" => "Empresa atualizada com sucesso"], 200);
+                } else {
+                    Log::info("Error updating organization", [$request->all()]);
+                    return response()->json([
+                        "message" => "Erro ao atualizar Empresa. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                    ], 400);
+                }
             }
         } else {
             Log::error("User without permission");

@@ -68,15 +68,16 @@ class UserController extends Controller
                 $user = null;
                 if ($request->user()->type === 'g') {
                     $user = User::where("organization_id", $request->user()->organization_id)
+                        ->whereNot("type", "f")
                         ->where("id", $id)
                         ->firstOrFail();
                 } else {
-                    $user = User::findOrFail($id);
+                    $user = User::whereNot("type", "f")->findOrFail($id);
                 }
                 return response()->json(["data" => $user], 200);
             } catch (\Exception $e) {
                 Log::info("Employee not found", [$id, $e->getMessage()]);
-                return response()->json(["message" => "Usuario não encontrado."], 403);
+                return response()->json(["message" => "Usuário não encontrado."], 403);
             }
         } else {
             Log::error("User without permission");

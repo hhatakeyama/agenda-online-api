@@ -102,7 +102,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/', [AdminCompanyController::class, 'create']);
             Route::patch('{company}', [AdminCompanyController::class, 'update']);
             Route::post('{company}/services', [AdminCompanyController::class, 'createService']);
-            Route::patch('{company}/services', [AdminCompanyController::class, 'updateService']);
+            Route::patch('{company}/services/{companyService}', [AdminCompanyController::class, 'updateService']);
             Route::post('{company}/thumb', [AdminCompanyController::class, 'updateThumb']);
             Route::delete('{id}', [AdminCompanyController::class, 'delete']);
             Route::delete('{company}/services/{id}', [AdminCompanyController::class, 'deleteService']);

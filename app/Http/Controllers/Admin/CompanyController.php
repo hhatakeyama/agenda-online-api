@@ -280,7 +280,7 @@ class CompanyController extends Controller
                 $service = Service::findOrFail($request->service_id);
                 $newService = CompanyService::create([
                     'company_id' => $company->id,
-                    'service_id' => $request->service_id,
+                    'service_id' => intval($request->service_id),
                     'price' => $service['price'],
                     'duration' => $service['duration'],
                     'description' => $service['description'],
@@ -302,6 +302,42 @@ class CompanyController extends Controller
                 Log::error("Error adding company service", [$e->getMessage()]);
                 return response()->json([
                     "message" => "Erro ao adicionar serviço da unidade. Entre em contato com o administrador do site.",
+                ], 400);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+    
+    public function updateService(Request $request, Company $company, CompanyService $companyService)
+    {
+        $allowedTypes = ['s', 'a', 'g'];
+        Log::info("Update company service", [$company->id, $companyService->id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $service = Service::findOrFail($companyService->service_id);
+                $companyService->service_id = intval($request->service_id);
+                $companyService->price = $request->has("price") ? $request->price : $service['price'];
+                $companyService->duration = $request->has("duration") ? $request->duration : $service['duration'];
+                $companyService->description = $request->has("description") ? $request->description : $service['description'];
+                $companyService->send_email = $request->has("send_email") ? $request->send_email : $service['send_email'];
+                $companyService->send_sms = $request->has("send_sms") ? $request->send_sms : $service["send_sms"];
+                $companyService->email_message = $request->has("email_message") ? $request->email_message : $service['email_message'];
+                $companyService->sms_message = $request->has("sms_message") ? $request->sms_message : $service['sms_message'];
+                if ($companyService->save()) {
+                    Log::info("Company Service updated successfully", [$companyService]);
+                    return response()->json(["message" => "Serviço atualizado com sucesso."], 200);
+                } else {
+                    Log::error("Error updating company service", [$companyService]);
+                    return response()->json([
+                        "message" => "Erro ao atualizar serviço da unidade. Entre em contato com o administrador do site.",
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                Log::error("Error updating company service", [$e->getMessage()]);
+                return response()->json([
+                    "message" => "Erro ao atualizar serviço da unidade. Entre em contato com o administrador do site.",
                 ], 400);
             }
         } else {
