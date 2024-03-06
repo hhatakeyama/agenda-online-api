@@ -31,6 +31,8 @@ class Email implements ShouldQueue
     {
         Log::info('Enviando email para ' . $this->schedule->client->name);
         $confirmationUrl = env("SITE_URL") . "/confirm-schedule?hash=" . $this->schedule->confirmed_hash;
+        
+        $this->schedule->date = date("d/m/Y", strtotime($this->schedule->date));
         Mail::send('mails.confirmation', ['schedule' => $this->schedule, 'scheduleItems' => $this->scheduleItems, 'confirmationUrl' => $confirmationUrl], function($message) {
             $message->to($this->schedule->client->email);
             $message->subject('Skedyou - Confirmação de agendamento!');

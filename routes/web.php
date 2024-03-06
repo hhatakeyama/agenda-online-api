@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MailController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return "Hello World";
+});
+
+Route::prefix('mail')->group(function () {
+    Route::get('schedule/{companyId}/{email}/{scheduleId}', [MailController::class, 'schedule']);
+    Route::get('confirmation/email/{scheduleId}', [MailController::class, 'confirmationEmail']);
+    Route::get('confirmation/sms/{scheduleId}', [MailController::class, 'confirmationSms']);
 });

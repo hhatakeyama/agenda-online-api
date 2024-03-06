@@ -143,18 +143,6 @@ class ScheduleController extends Controller
         }
     }
 
-    private function createScheduleItems($schedule_id, $item)
-    {
-        Log::info("Create schedule item", [$item]);
-        $item['schedule_id'] = $schedule_id;
-        $schedule_item = ScheduleItem::create($item);
-        if ($schedule_item->save()) {
-            Log::info("Schedule Item created", [$schedule_item]);
-        } else {
-            Log::error("Error create schedule item", [$item]);
-        }
-    }
-
     public function update(Request $request)
     {
         $shedule = Schedule::find($request->id);
@@ -169,6 +157,34 @@ class ScheduleController extends Controller
             return response()->json([
                 "message" => "Erro ao atualizar agendamento"
             ], 400);
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        $schedule = Schedule::find($request->id);
+        if ($schedule->delete()) {
+            Log::info("Schedule deleted", [$schedule]);
+            return response()->json([
+                "message" => "Agendamento deletado"
+            ], 200);
+        } else {
+            Log::error("Error delete schedule", [$schedule]);
+            return response()->json([
+                "message" => "Erro ao deletar agendamento"
+            ], 400);
+        }
+    }
+    
+    private function createScheduleItems($schedule_id, $item)
+    {
+        Log::info("Create schedule item", [$item]);
+        $item['schedule_id'] = $schedule_id;
+        $schedule_item = ScheduleItem::create($item);
+        if ($schedule_item->save()) {
+            Log::info("Schedule Item created", [$schedule_item]);
+        } else {
+            Log::error("Error create schedule item", [$item]);
         }
     }
 
@@ -201,31 +217,6 @@ class ScheduleController extends Controller
         } catch (Exception $e) {
             Log::error("Error confirming schedule", [$e->getMessage()]);
             return response()->json(["data" => $schedule], 403);
-        }
-    }
-
-    public function getByHash(Request $request)
-    {
-        Log::info("Searching schedule by hash", [$request->hash]);
-        $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
-            ->where("confirmed_hash", $request->hash)
-            ->firstOrFail();
-        return response()->json(["data" => $schedule], 200);
-    }
-
-    public function delete(Request $request)
-    {
-        $schedule = Schedule::find($request->id);
-        if ($schedule->delete()) {
-            Log::info("Schedule deleted", [$schedule]);
-            return response()->json([
-                "message" => "Agendamento deletado"
-            ], 200);
-        } else {
-            Log::error("Error delete schedule", [$schedule]);
-            return response()->json([
-                "message" => "Erro ao deletar agendamento"
-            ], 400);
         }
     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StateController;
+use App\Http\Controllers\WebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,8 +54,6 @@ Route::prefix('site')->group(function () {
         Route::get('unavailables', [ScheduleController::class, 'unavailables']);
         Route::post('/', [ScheduleController::class, 'create']);
         Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
-        Route::get('sendSms', [ScheduleController::class, 'sendMessage']);
-        Route::get('responseSms', [ScheduleController::class, 'responseMessage']);
         Route::post('confirmSchedule', [ScheduleController::class, 'confirmSchedule']);
     });
     Route::prefix('schedules-from-employee')->group(function () {
@@ -154,3 +153,5 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+Route::post('webhook', [WebhookController::class, 'webhook']);
