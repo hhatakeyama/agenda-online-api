@@ -12,7 +12,7 @@ class WebhookController extends Controller
     {
         Log::info("Call Webhook", [$request->all()]);
         $refer = $request->refer;
-        $action = explode("|", $refer);
+        $action = explode('|', $refer);
         if ($action[0] === "confirm") {
             try {
                 $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])

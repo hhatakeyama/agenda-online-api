@@ -68,13 +68,15 @@ class ScheduleController extends Controller
         if ($request->user()) {
             $search = $request->search;
             $company = $request->company ? $request->company : '';
+            $employees = $request->employees ? explode(",", $request->employees) : [];
             $date = $request->date ? $request->date : '';
             $schedules = [];
             Log::info("Searching all schedules", [$request->user()]);
             if (in_array($request->user()->type, $allowedTypes)) {
                 $schedules = ScheduleItem::with("employee", "service", "schedule.client")
                     ->whereHas("schedule.client", function ($query) use ($search) {
-                        $query->where("name", "LIKE", "%$search%");
+                        $query->where("name", "LIKE", "%$search%")
+                            ->orWhere("email", "LIKE", "%$search%");
                     })
                     ->whereHas("schedule.company", function ($query) use ($request) {
                         $query->where("organization_id", $request->user()->organization_id);
@@ -82,7 +84,8 @@ class ScheduleController extends Controller
             } else {
                 $schedules = ScheduleItem::with("employee", "service", "schedule.client")
                     ->whereHas("schedule.client", function ($query) use ($search) {
-                        $query->where("name", "LIKE", "%$search%");
+                        $query->where("name", "LIKE", "%$search%")
+                            ->orWhere("email", "LIKE", "%$search%");
                     });
                 // if ($request->organization_id) {
                 //     $schedules = $schedules->where("organization_id", $request->organization_id);
@@ -91,6 +94,11 @@ class ScheduleController extends Controller
             if ($company) {
                 $schedules = $schedules->whereHas("schedule", function ($query) use ($company) {
                     $query->where("company_id", $company);
+                });
+            }
+            if ($employees) {
+                $schedules = $schedules->whereHas("schedule", function ($query) use ($employees) {
+                    $query->whereIn("employee_id", $employees);
                 });
             }
             if ($date) {

@@ -22,6 +22,7 @@ class EmployeeController extends Controller
             $search = $request->search;
             $page = $request->page ? $request->page : 1;
             $pageSize = $request->page_size ? $request->page_size : 10;
+            $services = $request->services ? explode(",", $request->services) : [];
             $employees = [];
             if ($request->user()->type === 'g') {
                 $employees = User::with("employeeServices")
@@ -39,6 +40,11 @@ class EmployeeController extends Controller
                 if ($request->organization_id) {
                     $employees = $employees->where("organization_id", $request->organization_id);
                 }
+            }
+            if ($services) {
+                $employees = $employees->whereHas("employeeServices", function ($query) use ($services) {
+                    $query->whereIn("service_id", $services);
+                });
             }
             return response()->json([
                 "data" => $employees->paginate($pageSize, ['*'], 'page', $page)
