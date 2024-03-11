@@ -154,7 +154,7 @@ class EmployeeController extends Controller
     {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating employee", [$request->employee, $request->user()]);
-        if (in_array($request->user()->type, $allowedTypes)) {
+        if (in_array($request->user()->type, $allowedTypes) || ($request->user()->type === 'f' && $request->user()->id === $employee->id)) {
             $emailFilled = $employee->email != $request->email;
             $validations = [
                 'name' => 'required|max:255',
@@ -198,7 +198,7 @@ class EmployeeController extends Controller
     {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating photo", [$request->user()]);
-        if (in_array($request->user()->type, $allowedTypes)) {
+        if (in_array($request->user()->type, $allowedTypes) || ($request->user()->type === 'f' && $request->user()->id === $employee->id)) {
             try {
                 $file = $request->file;
                 $extensao = $file->extension();

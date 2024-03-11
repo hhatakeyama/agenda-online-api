@@ -16,7 +16,7 @@ class CompanyController extends Controller
 {
     public function get(Request $request)
     {
-        $allowedTypes = ['s', 'a', 'g'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all companies", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
@@ -28,7 +28,7 @@ class CompanyController extends Controller
                     ->where("name", "LIKE", "%$search%")
                     ->where("organization_id", $request->user()->organization_id);
             } else {
-                $companies = Company::with("organization", "companyEmployees", "companyServices")
+                $companies = Company::with("organization", "companyEmployees", "companyServices", "daysOfWeeks")
                     ->where("name", "LIKE", "%$search%");
                 if ($request->organization_id) {
                     $companies = $companies->where("organization_id", $request->organization_id);

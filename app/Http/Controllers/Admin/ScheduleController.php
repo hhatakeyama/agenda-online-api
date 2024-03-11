@@ -81,6 +81,9 @@ class ScheduleController extends Controller
                     ->whereHas("schedule.company", function ($query) use ($request) {
                         $query->where("organization_id", $request->user()->organization_id);
                     });
+                if ($request->user()->type === 'f') {
+                    $schedules = $schedules->where("employee_id", $request->user()->id);
+                }
             } else {
                 $schedules = ScheduleItem::with("employee", "service", "schedule.client")
                     ->whereHas("schedule.client", function ($query) use ($search) {
@@ -115,16 +118,23 @@ class ScheduleController extends Controller
 
     public function getById(Request $request, $id)
     {
-        $allowedTypes = ['s', 'a', 'g'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching schedule id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $schedule = null;
-                if ($request->user()->type === 'g') {
-                    $schedule = Schedule::with("scheduleItems")
-                        // ->where("organization_id", $request->user()->organization_id)
-                        ->where("id", $id)
-                        ->firstOrFail();
+                if (in_array($request->user()->type, ['g', 'f'])) {
+                    $schedule = Schedule::with("company", "scheduleItems")
+                        ->whereHas("company", function ($query) use ($request) {
+                            $query->where("organization_id", $request->user()->organization_id);
+                        })
+                        ->where("id", $id);
+                    if ($request->user()->type === 'f') {
+                        $schedule = $schedule->whereHas("scheduleItems", function ($query) use ($request) {
+                            $query->where("employee_id", $request->user()->id);
+                        });
+                    }
+                    $schedule = $schedule->firstOrFail();
                 } else {
                     $schedule = Schedule::findOrFail($id);
                 }
