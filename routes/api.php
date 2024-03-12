@@ -131,6 +131,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('schedules')->group(function () {
             Route::get('/', [AdminScheduleController::class, 'get']);
             Route::get('calendar', [AdminScheduleController::class, 'getCalendar']);
+            Route::get('unavailables', [AdminScheduleController::class, 'unavailables']);
             Route::get('{id}', [AdminScheduleController::class, 'getById']);
             Route::post('/', [AdminScheduleController::class, 'create']);
             Route::patch('{schedule}', [AdminScheduleController::class, 'update']);

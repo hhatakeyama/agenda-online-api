@@ -40,4 +40,8 @@ class Client extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    
+    public function schedules(){
+        return $this->hasMany("App\Models\Schedule", "client_id", "id");
+    }
 }

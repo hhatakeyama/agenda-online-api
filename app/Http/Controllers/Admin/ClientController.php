@@ -14,21 +14,21 @@ class ClientController extends Controller
 {
     public function get(Request $request)
     {
-        $allowedTypes = ['s', 'a'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all clients", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
             $page = $request->page ? $request->page : 1;
             $pageSize = $request->page_size ? $request->page_size : 10;
-            $clients = [];
-            if ($request->user()->type === 'g') {
-                $clients = Client::where("name", "LIKE", "%$search%")
-                    ->where("organization_id", $request->user()->organization_id);
-            } else {
-                $clients = Client::where("name", "LIKE", "%$search%");
-                if ($request->organization_id) {
-                    $clients = $clients->where("organization_id", $request->organization_id);
-                }
+            $status = $request->status;
+            $clients = Client::where("email", "LIKE", "%$search%");
+            // if ($request->company_id) {
+            //     $clients = $clients->whereHas("schedules", function ($query) use ($request) {
+            //         $query->where("company_id", $request->user()->company_id);
+            //     });
+            // }
+            if (!empty($status)) {
+                $clients = $clients->where("status", $status);
             }
             return response()->json([
                 "data" => $clients->paginate($pageSize, ['*'], 'page', $page)
@@ -151,7 +151,7 @@ class ClientController extends Controller
                 $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
                 $filehash = uniqid(date('HisYmd'));
                 $filename = $filehash . "." . $extensao;
-    
+
                 $filePath = "app/public/clients/";
                 $this->gerarFotos($filePath, $filehash, $extensao, $file);
                 $client->picture = $filename;

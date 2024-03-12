@@ -149,6 +149,32 @@ class ScheduleController extends Controller
         }
     }
 
+    function unavailables(Request $request)
+    {
+        $date = $request->date;
+        $date = date("Y-m-d", strtotime($date));
+        $company = $request->company;
+        $employees = $request->employees ? explode(",", $request->employees) : [];
+        Log::info("List all unavailable schedules", [$company]);
+
+        // List all employees scheduled periods
+        $employeesScheduledPeriods = ScheduleItem::with("schedule")
+            ->whereHas("schedule", function ($query) use ($company, $date) {
+                $query->where("company_id", $company)
+                    ->where("date", $date)
+                    ->where(function ($subquery) {
+                        $subquery->where([["done", 0], ["canceled", 0]])->orWhere('done', 1);
+                    });
+            })
+            ->whereIn("employee_id", $employees)
+            ->get();
+
+        // Return all ScheduleItems
+        return response()->json([
+            "data" => $employeesScheduledPeriods
+        ], 200);
+    }
+
     public function create(Request $request)
     {
         Log::info("Creating schedule", [$request]);

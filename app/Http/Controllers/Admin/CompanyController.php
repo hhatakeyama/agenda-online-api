@@ -24,11 +24,11 @@ class CompanyController extends Controller
             $pageSize = $request->page_size ? $request->page_size : 10;
             $companies = [];
             if ($request->user()->type === 'g') {
-                $companies = Company::with("organization", "companyEmployees", "companyServices", "daysOfWeeks")
+                $companies = Company::with("organization", "companyEmployees", "companyServices.service.serviceCategory", "companyServices.service.employeeServices.employee", "daysOfWeeks")
                     ->where("name", "LIKE", "%$search%")
                     ->where("organization_id", $request->user()->organization_id);
             } else {
-                $companies = Company::with("organization", "companyEmployees", "companyServices", "daysOfWeeks")
+                $companies = Company::with("organization", "companyEmployees", "companyServices.service.serviceCategory", "companyServices.service.employeeServices.employee", "daysOfWeeks")
                     ->where("name", "LIKE", "%$search%");
                 if ($request->organization_id) {
                     $companies = $companies->where("organization_id", $request->organization_id);
