@@ -124,7 +124,7 @@ class ScheduleController extends Controller
             try {
                 $schedule = null;
                 if (in_array($request->user()->type, ['g', 'f'])) {
-                    $schedule = Schedule::with("company", "scheduleItems")
+                    $schedule = Schedule::with("client", "company.city", "scheduleItems.employee", "scheduleItems.service")
                         ->whereHas("company", function ($query) use ($request) {
                             $query->where("organization_id", $request->user()->organization_id);
                         })
@@ -235,20 +235,130 @@ class ScheduleController extends Controller
         }
     }
 
-    public function update(Request $request)
+    public function update(Request $request, Schedule $schedule)
     {
-        $shedule = Schedule::find($request->id);
-        $shedule->fill($request->all());
-        if ($shedule->save()) {
-            Log::info("Schedule updated", [$shedule]);
-            return response()->json([
-                "message" => "Agendamento atualizado"
-            ], 200);
+        $allowedTypes = ['s', 'a', 'g', 'f'];
+        Log::info("Updating schedule", [$schedule, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                $schedule->fill($request->all());
+                if ($schedule->save()) {
+                    Log::info("Schedule updated", [$schedule]);
+                    return response()->json([
+                        "message" => "Agendamento atualizado"
+                    ], 200);
+                } else {
+                    Log::error("Error update schedule", [$schedule]);
+                    return response()->json([
+                        "message" => "Erro ao atualizar agendamento"
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                Log::info("Schedule not found", [$e->getMessage()]);
+                return response()->json(["message" => "Agendamento não encontrada."], 403);
+            }
         } else {
-            Log::error("Error update schedule", [$shedule]);
-            return response()->json([
-                "message" => "Erro ao atualizar agendamento"
-            ], 400);
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g', 'f'];
+        Log::info("Canceling schedule", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                if (in_array($request->user()->type, ['g', 'f'])) {
+                    $schedule = Schedule::where("id", $id)
+                        ->whereHas("company", function ($query) use ($request) {
+                            $query->where("organization_id", $request->user()->organization_id);
+                        })
+                        ->firstOrFail();
+                } else {
+                    $schedule = Schedule::findOrFail($id);
+                }
+                $schedule->canceled = $request->status;
+                if ($schedule->save()) {
+                    Log::info("Schedule canceled", [$id]);
+                    return response()->json(["message" => "Agendamento cancelado"], 200);
+                } else {
+                    Log::error("Error canceling schedule", [$id]);
+                    return response()->json(["message" => "Erro ao cancelar agendamento"], 400);
+                }
+            } catch (\Exception $e) {
+                Log::info("Schedule not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Agendamento não cancelado."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function confirm(Request $request, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g', 'f'];
+        Log::info("Confirming schedule", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                if (in_array($request->user()->type, ['g', 'f'])) {
+                    $schedule = Schedule::where("id", $id)
+                        ->whereHas("company", function ($query) use ($request) {
+                            $query->where("organization_id", $request->user()->organization_id);
+                        })
+                        ->firstOrFail();
+                } else {
+                    $schedule = Schedule::findOrFail($id);
+                }
+                $schedule->confirmed = $request->status;
+                if ($schedule->save()) {
+                    Log::info("Schedule confirmed", [$id]);
+                    return response()->json(["message" => "Agendamento confirmado"], 200);
+                } else {
+                    Log::error("Error canceling schedule", [$id]);
+                    return response()->json(["message" => "Erro ao confirmar agendamento"], 400);
+                }
+            } catch (\Exception $e) {
+                Log::info("Schedule not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Agendamento não confirmado."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function done(Request $request, $id)
+    {
+        $allowedTypes = ['s', 'a', 'g', 'f'];
+        Log::info("Done schedule", [$id, $request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            try {
+                if (in_array($request->user()->type, ['g', 'f'])) {
+                    $schedule = Schedule::where("id", $id)
+                        ->whereHas("company", function ($query) use ($request) {
+                            $query->where("organization_id", $request->user()->organization_id);
+                        })
+                        ->firstOrFail();
+                } else {
+                    $schedule = Schedule::findOrFail($id);
+                }
+                $schedule->done = $request->status;
+                if ($schedule->save()) {
+                    Log::info("Schedule done", [$id]);
+                    return response()->json(["message" => "Agendamento realizado"], 200);
+                } else {
+                    Log::error("Error done schedule", [$id]);
+                    return response()->json(["message" => "Erro ao realizar agendamento"], 400);
+                }
+            } catch (\Exception $e) {
+                Log::info("Schedule not found", [$id, $e->getMessage()]);
+                return response()->json(["message" => "Agendamento não realizado."], 403);
+            }
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
         }
     }
 

@@ -16,7 +16,7 @@ class EmployeeController extends Controller
 {
     public function get(Request $request)
     {
-        $allowedTypes = ['s', 'a', 'g'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all employees", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
@@ -24,7 +24,7 @@ class EmployeeController extends Controller
             $pageSize = $request->page_size ? $request->page_size : 10;
             $services = $request->services ? explode(",", $request->services) : [];
             $employees = [];
-            if ($request->user()->type === 'g') {
+            if (in_array($request->user()->type, ['g', 'f'])) {
                 $employees = User::with("employeeServices")
                     ->where("type", "f")
                     ->where(function ($subquery) use ($search) {

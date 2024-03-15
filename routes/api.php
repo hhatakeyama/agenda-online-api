@@ -135,7 +135,10 @@ Route::prefix('admin')->group(function () {
             Route::get('{id}', [AdminScheduleController::class, 'getById']);
             Route::post('/', [AdminScheduleController::class, 'create']);
             Route::patch('{schedule}', [AdminScheduleController::class, 'update']);
-            Route::delete('delete/{id}', [AdminScheduleController::class, 'delete']);
+            Route::patch('{id}/cancel', [AdminScheduleController::class, 'cancel']);
+            Route::patch('{id}/confirm', [AdminScheduleController::class, 'confirm']);
+            Route::patch('{id}/done', [AdminScheduleController::class, 'done']);
+            Route::delete('{id}', [AdminScheduleController::class, 'delete']);
         });
         Route::prefix('services')->group(function () {
             Route::get('/', [AdminServiceController::class, 'get']);

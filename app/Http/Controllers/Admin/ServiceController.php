@@ -10,14 +10,14 @@ class ServiceController extends Controller
 {
     public function get(Request $request)
     {
-        $allowedTypes = ['s', 'a', 'g'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all services", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
             $page = $request->page ? $request->page : 1;
             $pageSize = $request->page_size ? $request->page_size : 10;
             $services = [];
-            if ($request->user()->type === 'g') {
+            if (in_array($request->user()->type, ['g', 'f'])) {
                 $services = Service::where("name", "LIKE", "%$search%")
                     ->where("organization_id", $request->user()->organization_id);
             } else {

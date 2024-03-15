@@ -21,7 +21,15 @@ class ClientController extends Controller
             $page = $request->page ? $request->page : 1;
             $pageSize = $request->page_size ? $request->page_size : 10;
             $status = $request->status;
-            $clients = Client::where("email", "LIKE", "%$search%");
+            $selected = $request->selected;
+            $clients = Client::where(function ($query) use ($search, $selected) {
+                if (!empty($search) && !empty($selected))
+                    $query->where("email", "LIKE", "%$search%")->orWhere("id", $selected);
+                else if (!empty($selected))
+                    $query->where("id", $selected);
+                else if (!empty($search))
+                    $query->where("email", "LIKE", "%$search%");
+            });
             // if ($request->company_id) {
             //     $clients = $clients->whereHas("schedules", function ($query) use ($request) {
             //         $query->where("company_id", $request->user()->company_id);
@@ -66,7 +74,7 @@ class ClientController extends Controller
 
     public function create(Request $request)
     {
-        $allowedTypes = ['s', 'a'];
+        $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Creating client", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $request->validate([
@@ -89,7 +97,7 @@ class ClientController extends Controller
                 });
 
                 return response()->json([
-                    "token" => $token->plainTextToken,
+                    "client" => $client,
                     "message" => "Cliente criado com sucesso",
                 ], 200);
             } else {
