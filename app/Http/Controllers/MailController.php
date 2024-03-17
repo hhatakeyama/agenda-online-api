@@ -21,7 +21,7 @@ class MailController extends Controller
             'start_time' => $schedule->scheduleItems[0]->start_time,
             'company' => $company->name,
         ];
-        Mail::send('mails.agendamento', $data, function ($message) use ($email) {
+        Mail::send('mails.scheduled', $data, function ($message) use ($email) {
             $message->to($email);
             $message->subject('Skedyou - Agendamento efetuado com sucesso!');
             $message->from('suporte@skedyou.com', 'Equipe Skedyou');
@@ -35,7 +35,7 @@ class MailController extends Controller
         Log::info("Send confirmation email");
         try {
             $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
-            \App\Jobs\Email::dispatch($schedule, $schedule->scheduleItems);
+            \App\Jobs\EmailConfirmation::dispatch($schedule);
             return "Confirmation e-mail sent";
         } catch (\Exception $e) {
             return "Error sending confirmation e-mail. " . $e->getMessage();

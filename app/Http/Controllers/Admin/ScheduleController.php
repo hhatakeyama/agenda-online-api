@@ -205,7 +205,7 @@ class ScheduleController extends Controller
                 'start_time' => $firstItem['start_time'],
                 'company' => $company->name,
             ];
-            Mail::send('mails.agendamento', $data, function ($message) use ($client) {
+            Mail::send('mails.scheduled', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
                 $message->from('suporte@skedyou.com', 'Equipe Skedyou');

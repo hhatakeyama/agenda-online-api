@@ -31,7 +31,7 @@ class Sms implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("Enviando SMS", [$this->schedule]);
+        Log::info("Sending SMS", [$this->schedule]);
 
         $mobilePhone = $this->mobilePhoneTest ? $this->mobilePhoneTest : $this->schedule->client->mobilePhone;
         $mobile = preg_replace('/[^0-9]+/i', '', $mobilePhone);
@@ -46,7 +46,7 @@ class Sms implements ShouldQueue
         $message = 'Olá, ' . $this->schedule->client->name . ' seu agendamento para o dia ' . $date . ' às ' . $this->schedule->scheduleItems[0]->start_time . ' foi confirmado? Responda 1 para Sim ou 2 para Não.';
 
         $curlUrl = "https://api.smsdev.com.br/v1/send?key=" . env("TOKEN_SMS_DEV") . "&type=9&number=" . $mobile . "&refer=confirm|" . $this->schedule->confirmed_hash . "&msg=" . urlencode($message);
-        Log::info("Teste envio SMS", [$message, $curlUrl]);
+
         try {
             $curl = curl_init();
             curl_setopt_array($curl, array(
