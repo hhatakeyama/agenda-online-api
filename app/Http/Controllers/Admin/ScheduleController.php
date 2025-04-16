@@ -11,10 +11,8 @@ use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 
-class ScheduleController extends Controller
-{
-    public function get(Request $request)
-    {
+class ScheduleController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['g', 'f'];
         Log::info("Searching all schedules", [$request->user()]);
         if ($request->user()) {
@@ -61,8 +59,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function getCalendar(Request $request)
-    {
+    public function getCalendar(Request $request) {
         $allowedTypes = ['g', 'f'];
         Log::info("Searching all schedules", [$request->user()]);
         if ($request->user()) {
@@ -116,8 +113,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching schedule id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -149,8 +145,7 @@ class ScheduleController extends Controller
         }
     }
 
-    function unavailables(Request $request)
-    {
+    function unavailables(Request $request) {
         $date = $request->date;
         $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
@@ -175,8 +170,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         Log::info("Creating schedule", [$request]);
         $validated = $request->validate([
             'client_id' => 'required',
@@ -223,8 +217,7 @@ class ScheduleController extends Controller
         }
     }
 
-    private function createScheduleItems($schedule_id, $item)
-    {
+    private function createScheduleItems($schedule_id, $item) {
         Log::info("Create schedule item", [$item]);
         $item['schedule_id'] = $schedule_id;
         $schedule_item = ScheduleItem::create($item);
@@ -235,8 +228,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function update(Request $request, Schedule $schedule)
-    {
+    public function update(Request $request, Schedule $schedule) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Updating schedule", [$schedule, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -263,8 +255,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function cancel(Request $request, $id)
-    {
+    public function cancel(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Canceling schedule", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -296,8 +287,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function confirm(Request $request, $id)
-    {
+    public function confirm(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Confirming schedule", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -329,8 +319,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function done(Request $request, $id)
-    {
+    public function done(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Done schedule", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -362,8 +351,7 @@ class ScheduleController extends Controller
         }
     }
 
-    private function updateScheduleItems($schedule_id, $schedule_item)
-    {
+    private function updateScheduleItems($schedule_id, $schedule_item) {
         Log::info("Schedule Item", [$schedule_item]);
 
         if ($schedule_item->save()) {
@@ -373,8 +361,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function delete(Request $request)
-    {
+    public function delete(Request $request) {
         $schedule = Schedule::find($request->id);
         if ($schedule->delete()) {
             Log::info("Schedule deleted", [$schedule]);
