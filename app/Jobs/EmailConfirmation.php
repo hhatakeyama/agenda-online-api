@@ -34,7 +34,7 @@ class EmailConfirmation implements ShouldQueue
         Mail::send('mails.confirmation', ['schedule' => $this->schedule, 'confirmationUrl' => $confirmationUrl], function ($message) {
             $message->to($this->schedule->client->email);
             $message->subject('Skedyou - Confirmação de agendamento');
-            $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+            $message->from('suporte@skedyou.app', 'Equipe Skedyou');
         });
     }
 }

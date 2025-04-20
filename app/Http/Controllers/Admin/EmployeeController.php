@@ -118,7 +118,7 @@ class EmployeeController extends Controller
                     Mail::send('mails.novofuncionario', $data, function ($message) use ($employee) {
                         $message->to($employee->email);
                         $message->subject('Skedyou - Novo usuário');
-                        $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+                        $message->from('suporte@skedyou.app', 'Equipe Skedyou');
                     });
                 } catch (\Exception $e) {
                     Log::error("Mail not sent", [$e->getMessage()]);

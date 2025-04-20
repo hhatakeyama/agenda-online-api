@@ -24,7 +24,7 @@ class MailController extends Controller
         Mail::send('mails.scheduled', $data, function ($message) use ($email) {
             $message->to($email);
             $message->subject('Skedyou - Agendamento efetuado com sucesso!');
-            $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+            $message->from('suporte@skedyou.app', 'Equipe Skedyou');
         });
 
         return "Schedule e-mail sent";

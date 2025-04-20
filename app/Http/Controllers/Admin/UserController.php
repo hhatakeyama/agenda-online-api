@@ -114,7 +114,7 @@ class UserController extends Controller
                         Mail::send('mails.novousuario', $data, function ($message) use ($user) {
                             $message->to($user->email);
                             $message->subject('Skedyou - Novo usuário');
-                            $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+                            $message->from('suporte@skedyou.app', 'Equipe Skedyou');
                         });
                     } catch (Exception $e) {
                         Log::error("Mail not sent", [$e->getMessage()]);

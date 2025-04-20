@@ -126,7 +126,7 @@ class ScheduleController extends Controller
             Mail::send('mails.scheduled', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
-                $message->from('suporte@skedyou.com', 'Equipe Skedyou');
+                $message->from('suporte@skedyou.app', 'Equipe Skedyou');
             });
             // \App\Jobs\Sms::dispatch($schedule, $request->items);
             // \App\Jobs\Email::dispatch($schedule, $request->items);
