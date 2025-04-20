@@ -42,7 +42,7 @@ class ClientController extends Controller
             Mail::send('mails.cadastro', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                $message->from('suporte@skedyou.app', 'Equipe Skedyou');
+                $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
             });
 
             return response()->json([

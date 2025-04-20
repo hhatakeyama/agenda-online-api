@@ -202,7 +202,7 @@ class ScheduleController extends Controller {
             Mail::send('mails.scheduled', $data, function ($message) use ($client) {
                 $message->to($client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
-                $message->from('suporte@skedyou.app', 'Equipe Skedyou');
+                $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
             });
 
             Log::info("Schedule created", [$schedule]);

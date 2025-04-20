@@ -36,7 +36,7 @@ class EmailReminder implements ShouldQueue
         ], function ($message) {
             $message->to($this->schedule->client->email);
             $message->subject('Skedyou - Lembrete de agendamento');
-            $message->from('suporte@skedyou.app', 'Equipe Skedyou');
+            $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
         });
     }
 }
