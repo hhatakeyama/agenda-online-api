@@ -132,12 +132,14 @@ class ScheduleController extends Controller {
                     }
                     $schedule = $schedule->firstOrFail();
                 } else {
-                    $schedule = Schedule::findOrFail($id);
+                    $schedule = Schedule::with("client", "company.city", "scheduleItems.employee", "scheduleItems.service")
+                        ->where("id", $id)
+                        ->firstOrFail();
                 }
                 return response()->json(["data" => $schedule], 200);
             } catch (\Exception $e) {
                 Log::info("Schedule not found", [$id, $e->getMessage()]);
-                return response()->json(["message" => "Agendamento não encontrada."], 403);
+                return response()->json(["message" => "Agendamento não encontrado."], 403);
             }
         } else {
             Log::error("User without permission");
