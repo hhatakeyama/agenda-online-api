@@ -123,6 +123,8 @@ class ClientController extends Controller
                 'email' => 'required|max:255',
             ];
             $client->name = $request->name;
+            $client->mobilePhone = $request->mobilePhone;
+            $client->birthday = $request->birthday;
             if ($emailFilled) {
                 $validations['email'] = ['required', 'string', 'email', 'max:255', 'unique:App\Models\Client,email'];
                 $client->email = $request->email;
