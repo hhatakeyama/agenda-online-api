@@ -14,11 +14,11 @@ class EmployeeService extends Model
     ];
 
     public function employee(){
-        return $this->belongsTo("App\Models\User");
+        return $this->belongsTo("App\Models\User", "employee_id", "id");
     }
 
     public function service(){
-        return $this->belongsTo("App\Models\Service");
+        return $this->belongsTo("App\Models\Service", "service_id", "id");
     }
 
 }

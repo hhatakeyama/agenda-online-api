@@ -22,6 +22,6 @@ class CompanyDaysOfWeek extends Model
     ];
 
     public function company(){
-        return $this->belongsTo("App\Models\Company");
+        return $this->belongsTo("App\Models\Company", "company_id", "id");
     }
 }
