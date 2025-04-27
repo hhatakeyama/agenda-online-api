@@ -8,14 +8,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use App\Models\EmployeeService;
 use App\Models\Organization;
 use App\Models\User;
 use Exception;
 
-class UserController extends Controller
-{
-    public function get(Request $request)
-    {
+class UserController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching all users", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -26,13 +25,12 @@ class UserController extends Controller
             if ($request->user()->type === 'g') {
                 $users = User::where(function ($subquery) use ($search) {
                     $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
-                })->where("type", "g")->where("organization_id", $request->user()->organization_id);
+                })->where("organization_id", $request->user()->organization_id);
             } else {
                 $users = User::with("organization")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
-                    })
-                    ->whereNot("type", "f");
+                    });
                 if ($request->user()->type === "a") {
                     $users = $users->whereNot("type", "s");
                 }
@@ -49,8 +47,7 @@ class UserController extends Controller
         }
     }
 
-    public function me(Request $request)
-    {
+    public function me(Request $request) {
         Log::info("Retrieving me data", [$request->user()]);
         if ($request->user()) {
             return response()->json(['data' => $request->user()], 200);
@@ -59,20 +56,21 @@ class UserController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching user id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $user = null;
-                if ($request->user()->type === 'g') {
-                    $user = User::where("organization_id", $request->user()->organization_id)
-                        ->whereNot("type", "f")
+                if (in_array($request->user()->type, ['g', 'f'])) {
+                    $user = User::with("employeeServices.service")
+                        ->where("organization_id", $request->user()->organization_id)
                         ->where("id", $id)
                         ->firstOrFail();
                 } else {
-                    $user = User::whereNot("type", "f")->findOrFail($id);
+                    $user = User::with("employeeServices.service")
+                        ->where("id", $id)
+                        ->firstOrFail();
                 }
                 return response()->json(["data" => $user], 200);
             } catch (\Exception $e) {
@@ -86,8 +84,7 @@ class UserController extends Controller
     }
 
     // Validar para type g
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Creating user", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -96,6 +93,7 @@ class UserController extends Controller
                 'email' => 'required|unique:App\Models\User,email|max:255',
                 'password' => 'required',
                 'type' => 'required',
+                'occupation' => 'max:191',
                 'organization_id' => 'required|integer',
             ], [
                 "email.unique" => "E-mail já utilizado",
@@ -104,7 +102,12 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
             if ($user->save()) {
                 Log::info("User created");
-                if ($user->type === "g") {
+                if ($request->services) {
+                    foreach ($request->services as $service_id) {
+                        $this->createServicesEmployee($user->id, $service_id);
+                    }
+                }
+                if (in_array($user->type, ["g", "f"])) {
                     $organization = Organization::find($request->organization_id);
                     $data = [
                         'name' => $user->name,
@@ -120,11 +123,11 @@ class UserController extends Controller
                         Log::error("Mail not sent", [$e->getMessage()]);
                     }
                 }
-                return response()->json(["message" => "Usuario criado com sucesso"], 200);
+                return response()->json(["message" => "Usuário criado com sucesso"], 200);
             } else {
                 Log::error("Error create user", [$request->all()]);
                 return response()->json([
-                    "message" => "Erro ao criar usuario. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+                    "message" => "Erro ao criar usuário. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
                 ], 400);
             }
         } else {
@@ -134,8 +137,7 @@ class UserController extends Controller
     }
 
     // Validar para type g
-    public function update(Request $request, User $user)
-    {
+    public function update(Request $request, User $user) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating user", [$request->user, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -160,6 +162,12 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
             }
             if ($user->save()) {
+                if ($request->services) {
+                    $user->employeeServices()->delete();
+                    foreach ($request->services as $service_id) {
+                        $this->createServicesEmployee($user->id, $service_id);
+                    }
+                }
                 return response()->json(["message" => "Usuário atualizado com sucesso"], 200);
             } else {
                 Log::info("Error updating user", [$request->all()]);
@@ -173,42 +181,34 @@ class UserController extends Controller
         }
     }
 
-    public function updatePicture(Request $request, User $employee)
-    {
-        $allowedTypes = ['s', 'a'];
+    public function updatePicture(Request $request, User $user) {
         Log::info("Updating photo", [$request->client, $request->user()]);
-        if (in_array($request->user()->type, $allowedTypes)) {
-            try {
-                $file = $request->file;
-                $extensao = $file->extension();
-                $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
-                $filehash = uniqid(date('HisYmd'));
-                $filename = $filehash . "." . $extensao;
-    
-                $filePath = "app/public/employees/";
-                $this->gerarFotos($filePath, $filehash, $extensao, $file);
-                $employee->picture = $filename;
-            } catch (\Exception $e) {
-                Log::error("Erro upload foto: " . $e->getMessage());
-                return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
-            }
-            if ($employee->save()) {
-                return response()->json(["message" => "Foto atualizada com sucesso"], 200);
-            } else {
-                Log::info("Error updating photo", [$request]);
-                return response()->json([
-                    "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
-                ], 400);
-            }
+        try {
+            $file = $request->file;
+            $extensao = $file->extension();
+            $extensao = ($extensao == "jpeg" ? "jpg" : $extensao);
+            $filehash = uniqid(date('HisYmd'));
+            $filename = $filehash . "." . $extensao;
+
+            $filePath = "app/public/users/";
+            $this->gerarFotos($filePath, $filehash, $extensao, $file);
+            $user->picture = $filename;
+        } catch (\Exception $e) {
+            Log::error("Erro upload foto: " . $e->getMessage());
+            return response()->json(collect(['message' => 'Erro ao salvar foto']), 401);
+        }
+        if ($user->save()) {
+            return response()->json(["message" => "Foto atualizada com sucesso"], 200);
         } else {
-            Log::info("User without permission, tried to update picture");
-            return response()->json(["message" => "Unauthorized"], 401);
+            Log::info("Error updating photo", [$request]);
+            return response()->json([
+                "message" => "Erro ao atualizar foto. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+            ], 400);
         }
     }
 
     // Validar para type g
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a'];
         Log::info("Inativation of the user", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -229,10 +229,22 @@ class UserController extends Controller
             return response()->json(["message" => "Unauthorized"], 401);
         }
     }
-    
+
     // Funções locais
-    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
-    {
+    private function createServicesEmployee($employee_id, $service_id) {
+        Log::info("Service's employee", [$service_id]);
+        $employeeService = EmployeeService::create([
+            'employee_id' => $employee_id,
+            'service_id' => $service_id,
+        ]);
+        if ($employeeService->save()) {
+            Log::info("Service's employee created");
+        } else {
+            Log::error("Error create service's employee", [$employee_id, $service_id]);
+        }
+    }
+
+    private function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
         $filename = $filehash . "." . $extensao;
         //Tamanho original
         $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
@@ -250,17 +262,12 @@ class UserController extends Controller
         // ));
     }
 
-    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
-    {
+    private function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 60) {
         Log::info("Gerando foto: ", [$filePath, $filename]);
         $manager = new ImageManager(new Driver());
         $img = $manager->read($file);
 
         try {
-            if ($extensao == "webp") {
-                $img->encode($extensao);
-            }
-
             if (isset($options["rotate"]) && $options["rotate"] != 0) {
                 $img->rotate($options["rotate"]);
             }
@@ -283,7 +290,7 @@ class UserController extends Controller
                 $filename = $imgWidth . "x" . $imgHeight . "-" . $filename;
             }
 
-            $img->save(storage_path($filePath . $filename), $qualidade);
+            $img->save(storage_path($filePath . $filename));
         } catch (\Exception $e) {
             Log::info("Erro ao gerar foto", [$e->getMessage()]);
         }

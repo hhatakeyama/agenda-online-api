@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('type', ['s', 'a', 'g', 'f'])->default("f");
             $table->tinyInteger('status')->default(1);
             $table->unsignedBigInteger('organization_id')->nullable();
+            $table->tinyInteger('can_make_service')->default(0);
             $table->timestamps();
 
             $table->foreign('organization_id')->references('id')->on('organizations');

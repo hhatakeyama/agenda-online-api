@@ -12,10 +12,8 @@ use App\Models\User;
 use App\Models\EmployeeService;
 use App\Models\Organization;
 
-class EmployeeController extends Controller
-{
-    public function get(Request $request)
-    {
+class EmployeeController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all employees", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -26,14 +24,14 @@ class EmployeeController extends Controller
             $employees = [];
             if (in_array($request->user()->type, ['g', 'f'])) {
                 $employees = User::with("employeeServices")
-                    ->where("type", "f")
+                    ->where("can_make_service", "1")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
                     })
                     ->where("organization_id", $request->user()->organization_id);
             } else {
                 $employees = User::with("organization", "employeeServices")
-                    ->where("type", "f")
+                ->where("can_make_service", "1")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
                     });
@@ -55,8 +53,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching employee id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -65,12 +62,12 @@ class EmployeeController extends Controller
                 if ($request->user()->type === 'g') {
                     $employee = User::with("employeeServices.service")
                         ->where("organization_id", $request->user()->organization_id)
-                        ->where("type", "f")
+                        ->where("can_make_service", "1")
                         ->where("id", $id)
                         ->firstOrFail();
                 } else {
                     $employee = User::with("employeeServices.service")
-                        ->where("type", "f")
+                        ->where("can_make_service", "1")
                         ->where("id", $id)
                         ->firstOrFail();
                 }
@@ -85,8 +82,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Creating employee", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -136,22 +132,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function createServicesEmployee($employee_id, $service_id)
-    {
-        Log::info("Service's employee", [$service_id]);
-        $employeeService = EmployeeService::create([
-            'employee_id' => $employee_id,
-            'service_id' => $service_id,
-        ]);
-        if ($employeeService->save()) {
-            Log::info("Service's employee created");
-        } else {
-            Log::error("Error create service's employee", [$employee_id, $service_id]);
-        }
-    }
-
-    public function update(Request $request, User $employee)
-    {
+    public function update(Request $request, User $employee) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating employee", [$request->employee, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes) || ($request->user()->type === 'f' && $request->user()->id === $employee->id)) {
@@ -194,8 +175,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function updatePicture(Request $request, User $employee)
-    {
+    public function updatePicture(Request $request, User $employee) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating photo", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes) || ($request->user()->type === 'f' && $request->user()->id === $employee->id)) {
@@ -227,13 +207,12 @@ class EmployeeController extends Controller
         }
     }
 
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Inativation of the employee", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
-                $employee = User::where("type", "f")->findOrFail($id);
+                $employee = User::where("can_make_service", "1")->findOrFail($id);
                 $employee->status = 0;
                 $employee->save();
                 Log::info("Employee inactivated successfully");
@@ -251,8 +230,20 @@ class EmployeeController extends Controller
     }
 
     // Funções locais
-    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
-    {
+    private function createServicesEmployee($employee_id, $service_id) {
+        Log::info("Service's employee", [$service_id]);
+        $employeeService = EmployeeService::create([
+            'employee_id' => $employee_id,
+            'service_id' => $service_id,
+        ]);
+        if ($employeeService->save()) {
+            Log::info("Service's employee created");
+        } else {
+            Log::error("Error create service's employee", [$employee_id, $service_id]);
+        }
+    }
+
+    private function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
         $filename = $filehash . "." . $extensao;
         //Tamanho original
         $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
@@ -270,8 +261,7 @@ class EmployeeController extends Controller
         // ));
     }
 
-    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
-    {
+    private function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80) {
         Log::info("Gerando foto: ", [$filePath, $filename]);
         $manager = new ImageManager(new Driver());
         $img = $manager->read($file);

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'type',
         'organization_id',
+        'can_make_service',
     ];
 
     /**
