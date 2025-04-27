@@ -13,6 +13,7 @@ class Company extends Model
         "cep",
         "city_id",
         "state",
+        "complement",
         "thumb",
         "organization_id",
         "phone",

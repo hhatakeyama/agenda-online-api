@@ -117,62 +117,6 @@ class CompanyController extends Controller {
     }
   }
 
-  private function createDaysofWeek($company_id, $dayOfWeek) {
-    Log::info("Days of week's company", [$dayOfWeek]);
-    $day_of_week = CompanyDaysOfWeek::create([
-      'day_of_week' => $dayOfWeek['day_of_week'],
-      'company_id' => $company_id,
-      'start_time' => $dayOfWeek['start_time'],
-      'end_time' => $dayOfWeek['end_time'],
-      'start_time_2' => $dayOfWeek['start_time_2'],
-      'end_time_2' => $dayOfWeek['end_time_2'],
-      'start_time_3' => $dayOfWeek['start_time_3'],
-      'end_time_3' => $dayOfWeek['end_time_3'],
-      'start_time_4' => $dayOfWeek['start_time_4'],
-      'end_time_4' => $dayOfWeek['end_time_4'],
-    ]);
-
-    if ($day_of_week->save()) {
-      Log::info("Days of week's company created", [$day_of_week]);
-    } else {
-      Log::error("Error create days of week's company", [$dayOfWeek]);
-    }
-  }
-
-  private function createServiceCompany($company_id, $service) {
-    Log::info("Create Company Service", [$service]);
-    $newService = CompanyService::create([
-      'company_id' => $company_id,
-      'service_id' => $service['service_id'],
-      'price' => $service['price'],
-      'duration' => $service['duration'],
-      'description' => $service['description'],
-      'send_email' => $service['send_email'],
-      'send_sms' => $service["send_sms"],
-      'email_message' => $service['email_message'],
-      'sms_message' => $service['sms_message'],
-    ]);
-    if ($newService->save()) {
-      Log::info("Service's company created", [$newService]);
-    } else {
-      Log::error("Error create company's employee", [$service]);
-    }
-  }
-
-  private function createEmployeesOfCompany($company_id, $employee_id) {
-    Log::info("Employee's company", [$employee_id]);
-    $employee = CompanyEmployee::create([
-      'company_id' => $company_id,
-      'employee_id' => $employee_id,
-    ]);
-    $employee->company_id = $company_id;
-    if ($employee->save()) {
-      Log::info("Employee's company created", [$employee]);
-    } else {
-      Log::error("Error create employee's company", [$employee_id]);
-    }
-  }
-
   // Validar para type g
   public function update(Request $request, Company $company) {
     $allowedTypes = ['s', 'a', 'g'];
@@ -193,6 +137,13 @@ class CompanyController extends Controller {
       // ]);
       $company->update($request->all());
       if ($company->save()) {
+        if ($request->employees) {
+          $company->companyEmployees()->delete();
+          foreach ($request->employees as $employee) {
+            $this->createEmployeesOfCompany($company->id, $employee);
+          }
+        }
+
         return response()->json(["message" => "Unidade atualizada com sucesso"], 200);
       } else {
         Log::info("Error updating company", [$request->all()]);
@@ -392,6 +343,62 @@ class CompanyController extends Controller {
   }
 
   // Funções locais
+  private function createDaysofWeek($company_id, $dayOfWeek) {
+    Log::info("Days of week's company", [$dayOfWeek]);
+    $day_of_week = CompanyDaysOfWeek::create([
+      'day_of_week' => $dayOfWeek['day_of_week'],
+      'company_id' => $company_id,
+      'start_time' => $dayOfWeek['start_time'],
+      'end_time' => $dayOfWeek['end_time'],
+      'start_time_2' => $dayOfWeek['start_time_2'],
+      'end_time_2' => $dayOfWeek['end_time_2'],
+      'start_time_3' => $dayOfWeek['start_time_3'],
+      'end_time_3' => $dayOfWeek['end_time_3'],
+      'start_time_4' => $dayOfWeek['start_time_4'],
+      'end_time_4' => $dayOfWeek['end_time_4'],
+    ]);
+
+    if ($day_of_week->save()) {
+      Log::info("Days of week's company created", [$day_of_week]);
+    } else {
+      Log::error("Error create days of week's company", [$dayOfWeek]);
+    }
+  }
+
+  private function createServiceCompany($company_id, $service) {
+    Log::info("Create Company Service", [$service]);
+    $newService = CompanyService::create([
+      'company_id' => $company_id,
+      'service_id' => $service['service_id'],
+      'price' => $service['price'],
+      'duration' => $service['duration'],
+      'description' => $service['description'],
+      'send_email' => $service['send_email'],
+      'send_sms' => $service["send_sms"],
+      'email_message' => $service['email_message'],
+      'sms_message' => $service['sms_message'],
+    ]);
+    if ($newService->save()) {
+      Log::info("Service's company created", [$newService]);
+    } else {
+      Log::error("Error create company's employee", [$service]);
+    }
+  }
+
+  private function createEmployeesOfCompany($company_id, $employee_id) {
+    Log::info("Employee's company", [$employee_id]);
+    $employee = CompanyEmployee::create([
+      'company_id' => $company_id,
+      'employee_id' => $employee_id,
+    ]);
+    $employee->company_id = $company_id;
+    if ($employee->save()) {
+      Log::info("Employee's company created", [$employee]);
+    } else {
+      Log::error("Error create employee's company", [$employee_id]);
+    }
+  }
+
   private function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
     $filename = $filehash . "." . $extensao;
     //Tamanho original
