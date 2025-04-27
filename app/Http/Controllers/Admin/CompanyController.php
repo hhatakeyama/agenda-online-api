@@ -79,8 +79,8 @@ class CompanyController extends Controller {
         'city_id' => 'required|max:255',
         'state' => 'required|max:255',
         'organization_id' => 'required|integer',
-        'phone' => 'required|max:255',
-        'mobilePhone' => 'required|max:255',
+        'phone' => 'max:255',
+        'mobilePhone' => 'max:255',
       ]);
       $company = Company::create($request->all());
       if ($company->save()) {
@@ -213,35 +213,63 @@ class CompanyController extends Controller {
   }
 
   // Períodos
-  public function storePeriodos(Request $request, Company $company) {
-    $user = $request->user();
+  public function storeDayOfWeek(Request $request, Company $company) {
+    Log::info("Creating company day of week", [$request->user()]);
+    $request->validate([
+      'day_of_week' => 'required',
+      'start_time' => 'required',
+      'end_time' => 'required',
+    ]);
 
-    if ($user->tipo !== 's')
-      return response()->json(['error' => 'Unauthorized'], 401);
-
-    foreach ($request->periodos as $periodo) {
-      if (isset($periodo['id'])) {
-        $atualizarPeriodo = CompanyDaysOfWeek::find($periodo['id']);
-        $atualizarPeriodo->fill($periodo);
-        $atualizarPeriodo->save();
-      } else {
-        $novoPeriodo = new CompanyDaysOfWeek($periodo);
-        $novoPeriodo->save();
-      }
+    $dayOfWeek = CompanyDaysOfWeek::create($request->all());
+    $dayOfWeek->company_id = $company->id;
+    if (!$dayOfWeek->save()) {
+      Log::error("Error create company day of week", [$request->all()]);
+      return response()->json([
+        "message" => "Erro ao criar dia da semana da unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+      ], 400);
     }
 
-    return response()->json(['message' => "Período da unidade salvo com sucesso!", 'data' => $company]);
+    return response()->json(['message' => "Dia da semana salvo com sucesso!", 'data' => $company]);
   }
 
-  public function removePeriodo(Request $request, Company $company, CompanyDaysOfWeek $periodo) {
-    $user = $request->user();
-    if ($user->tipo === 's') {
-      if (!$periodo->delete()) {
-        Log::error('Período da unidade NÃO deletado', ['nome' => $periodo->nome]);
-        return response()->json(['error' => 'Erro ao remover o período da unidade. Tente novamente mais tarde.'], 500);
+  public function updateDayOfWeek(Request $request, Company $company, $id) {
+    Log::info("Updating company", [$request->company, $request->user()]);
+    $request->validate([
+      'day_of_week' => 'required',
+      'start_time' => 'required',
+      'end_time' => 'required',
+    ]);
+
+    $dayOfWeek = CompanyDaysOfWeek::find($id);
+    $dayOfWeek->fill($request->all());
+    $dayOfWeek->company_id = $company->id;
+    if ($dayOfWeek->save()) {
+      return response()->json(["message" => "Dia da semana da unidade atualizado com sucesso"], 200);
+    } else {
+      Log::info("Error updating company", [$request->all()]);
+      return response()->json([
+        "message" => "Erro ao atualizar dia da semana da unidade. Verifique se os campos foram preenchidos corretamente ou tente novamente mais tarde.",
+      ], 400);
+    }
+
+    return response()->json(['message' => "Dia da semana atualizado com sucesso!", 'data' => $company]);
+  }
+
+  public function removeDayOfWeek(Request $request, Company $company, CompanyDaysOfWeek $dayOfWeek) {
+    Log::info("Deleting company day of week", [$request->user()]);
+    $allowedTypes = ['s', 'a', 'g'];
+    if (in_array($request->user()->type, $allowedTypes)) {
+      if ($request->user()->type === 'g' && $request->user()->organization_id !== $dayOfWeek->company->organization_id) {
+        Log::error('Tentativa de deleção do dia da semana da unidade de outra empresa', [$request->user(), $company, $dayOfWeek]);
+        return response()->json(['error' => 'Unauthorized'], 401);
+      }
+      if (!$dayOfWeek->delete()) {
+        Log::error('Dia da semana da unidade NÃO deletado', [$dayOfWeek]);
+        return response()->json(['error' => 'Erro ao remover o dia da semana da unidade. Tente novamente mais tarde.'], 500);
       }
 
-      return response()->json(['message' => 'Período da unidade removido com sucesso!']);
+      return response()->json(['message' => 'Dia da semana da unidade removido com sucesso!']);
     }
 
     return response()->json(['error' => 'Unauthorized'], 401);

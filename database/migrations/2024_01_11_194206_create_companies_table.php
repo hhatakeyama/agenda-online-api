@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('thumb')->nullable();
             $table->unsignedBigInteger('organization_id');
             $table->string('email');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('mobilePhone')->nullable();
             $table->longText('socialMedia')->nullable();
             $table->longText('map')->nullable();

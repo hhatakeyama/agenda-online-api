@@ -105,6 +105,9 @@ Route::prefix('admin')->group(function () {
             Route::post('{company}/thumb', [AdminCompanyController::class, 'updateThumb']);
             Route::delete('{id}', [AdminCompanyController::class, 'delete']);
             Route::delete('{company}/services/{id}', [AdminCompanyController::class, 'deleteService']);
+            Route::post('{company}/days-of-week', [AdminCompanyController::class, 'storeDayOfWeek']);
+            Route::patch('{company}/days-of-week/{id}', [AdminCompanyController::class, 'updateDayOfWeek']);
+            Route::delete('{company}/days-of-week/{dayOfWeek}', [AdminCompanyController::class, 'removeDayOfWeek']);
         });
         Route::prefix('employees')->group(function () {
             Route::get('/', [AdminEmployeeController::class, 'get']);
