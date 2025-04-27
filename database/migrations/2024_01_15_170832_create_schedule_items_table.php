@@ -24,7 +24,7 @@ return new class extends Migration
 
             $table->foreign('employee_id')->references('id')->on('users');
             $table->foreign('schedule_id')->references('id')->on('schedules');
-            $table->foreign('service_id')->references('id')->on('company_services');
+            $table->foreign('service_id')->references('id')->on('services');
         });
     }
 
