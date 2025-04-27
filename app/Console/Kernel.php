@@ -47,7 +47,7 @@ class Kernel extends ConsoleKernel
 
                 Log::info('Sending reminder', [$schedule->client]);
             }
-        })->timezone('America/Sao_Paulo')->dailyAt('09:50');
+        })->timezone('America/Sao_Paulo')->dailyAt('08:00');
 
         // $schedule->command('backup:clean')->daily()->at('01:00');
         // $schedule->command('backup:run')->twiceDaily(2, 14);
