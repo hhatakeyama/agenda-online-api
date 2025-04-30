@@ -236,10 +236,32 @@ class ScheduleController extends Controller {
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $schedule->fill($request->all());
+                $schedule->date = date("Y-m-d", strtotime($request->date));
                 if ($schedule->save()) {
                     Log::info("Schedule updated", [$schedule]);
+                    $schedule->scheduleItems()->delete();
+                    if ($request->items) {
+                        foreach ($request->items as $item) {
+                            $this->createScheduleItems($schedule->id, $item);
+                        }
+                    }
+                    $client = Client::where('id', $request->client_id)->firstOrFail();
+                    $company = Company::find($request->company_id);
+                    $firstItem = $request->items[0];
+                    $data = [
+                        'name' => $client->name,
+                        'date' => date("d/m/Y", strtotime($schedule->date)),
+                        'start_time' => $firstItem['start_time'],
+                        'company' => $company->name,
+                    ];
+                    Mail::send('mails.rescheduled', $data, function ($message) use ($client) {
+                        $message->to($client->email);
+                        $message->subject('Skedyou - Reagendamento realizado com sucesso!');
+                        $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+                    });
+
                     return response()->json([
-                        "message" => "Agendamento atualizado"
+                        "message" => "Reagendamento atualizado"
                     ], 200);
                 } else {
                     Log::error("Error update schedule", [$schedule]);
@@ -272,8 +294,16 @@ class ScheduleController extends Controller {
                     $schedule = Schedule::findOrFail($id);
                 }
                 $schedule->canceled = $request->status;
+                $client = $schedule->client;
                 if ($schedule->save()) {
                     Log::info("Schedule canceled", [$id]);
+
+                    Mail::send('mails.unscheduled', [], function ($message) use ($client) {
+                        $message->to($client->email);
+                        $message->subject('Skedyou - Agendamento cancelado!');
+                        $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+                    });
+
                     return response()->json(["message" => "Agendamento cancelado"], 200);
                 } else {
                     Log::error("Error canceling schedule", [$id]);
