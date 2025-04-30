@@ -294,15 +294,24 @@ class ScheduleController extends Controller {
                     $schedule = Schedule::findOrFail($id);
                 }
                 $schedule->canceled = $request->status;
-                $client = $schedule->client;
                 if ($schedule->save()) {
                     Log::info("Schedule canceled", [$id]);
 
-                    Mail::send('mails.unscheduled', [], function ($message) use ($client) {
-                        $message->to($client->email);
-                        $message->subject('Skedyou - Agendamento cancelado!');
-                        $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
-                    });
+                    if ($request->status === "1") {
+                        $client = $schedule->client;
+                        $firstItem = $schedule->scheduleItems[0];
+                        $data = [
+                            'name' => $schedule->client->name,
+                            'date' => date("d/m/Y", strtotime($schedule->date)),
+                            'start_time' => $firstItem['start_time'],
+                            'company' => $schedule->company->name,
+                        ];
+                        Mail::send('mails.unscheduled', $data, function ($message) use ($client) {
+                            $message->to($client->email);
+                            $message->subject('Skedyou - Agendamento cancelado!');
+                            $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+                        });
+                    }
 
                     return response()->json(["message" => "Agendamento cancelado"], 200);
                 } else {
