@@ -24,17 +24,19 @@ class ClientController extends Controller
             $selected = $request->selected;
             $clients = Client::where(function ($query) use ($search, $selected) {
                 if (!empty($search) && !empty($selected))
-                    $query->where("email", "LIKE", "%$search%")->orWhere("id", $selected);
+                    $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%")->orWhere("id", $selected);
                 else if (!empty($selected))
                     $query->where("id", $selected);
                 else if (!empty($search))
-                    $query->where("email", "LIKE", "%$search%");
+                    $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
             });
-            // if ($request->company_id) {
-            //     $clients = $clients->whereHas("schedules", function ($query) use ($request) {
-            //         $query->where("company_id", $request->user()->company_id);
-            //     });
-            // }
+            if (in_array($request->user()->type, ['g', 'f'])) {
+                $clients = $clients->whereHas("schedules", function ($query) use ($request) {
+                    $query->whereHas("company", function ($query2) use ($request) {
+                        $query2->where("organization_id", $request->user()->organization_id);
+                    });
+                });
+            }
             if (!empty($status)) {
                 $clients = $clients->where("status", $status);
             }

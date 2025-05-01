@@ -14,10 +14,8 @@ use App\Models\Service;
 use App\Models\User;
 use Exception;
 
-class ScheduleController extends Controller
-{
-    public function getSheduleFromEmployee(Request $request)
-    {
+class ScheduleController extends Controller {
+    public function getSheduleFromEmployee(Request $request) {
         $schedules = Schedule::with("scheduleItems", "client")->where("company_id", $request->company_id)->where("date", "=", $request->date)->get();
         $schedulesFromEmployees = [];
         foreach ($schedules as $item) {
@@ -33,12 +31,19 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function getSheduleFromClient(Request $request, $client_id)
-    {
+    public function getSheduleFromClient(Request $request, $client_id) {
         Log::info("Searching client schedules" . $client_id, [$request]);
         $page = $request->page ? $request->page : 1;
         $pageSize = $request->page_size ? $request->page_size : 20;
-        $schedules = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
+        $schedules = Schedule::with([
+            "scheduleItems.employee",
+            "scheduleItems.service.employeeServices.employee",
+            "company.organization",
+            "company.city",
+            "company.daysOfWeeks",
+            "company.companyServices.service.serviceCategory",
+            "company.companyServices.service.employeeServices.employee"
+        ])
             ->where("client_id", $client_id)
             ->orderBy("date", "DESC")
             ->paginate($pageSize, ['*'], 'page', $page);
@@ -47,8 +52,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function getSchedulesFromEmployeesBeginningToday()
-    {
+    public function getSchedulesFromEmployeesBeginningToday() {
         Log::info("Searching schedules from employees beginning today");
         $schedule = Schedule::with("scheduleItems")->where("date", ">=", date("Y-m-d"))->get();
         return response()->json([
@@ -56,8 +60,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function getSchedulesFromEmployeeBeginningToday($employee_id)
-    {
+    public function getSchedulesFromEmployeeBeginningToday($employee_id) {
         Log::info("Searching schedules from employee beginning today");
         $schedule = Schedule::with("scheduleItems")->whereHas("scheduleItems", function ($query) use ($employee_id) {
             $query->where("employee_id", $employee_id);
@@ -67,8 +70,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    function unavailables(Request $request)
-    {
+    function unavailables(Request $request) {
         $date = $request->date;
         $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
@@ -93,8 +95,7 @@ class ScheduleController extends Controller
         ], 200);
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         Log::info("Creating schedule", [$request]);
         $validated = $request->validate([
             'client_id' => 'required',
@@ -143,25 +144,49 @@ class ScheduleController extends Controller
         }
     }
 
-    public function update(Request $request)
-    {
-        $shedule = Schedule::find($request->id);
-        $shedule->fill($request->all());
-        if ($shedule->save()) {
-            Log::info("Schedule updated", [$shedule]);
+    public function update(Request $request, Schedule $schedule) {
+        Log::info("Updating schedule", [$schedule, $request->user()]);
+        $schedule->fill($request->all());
+        $schedule->date = date("Y-m-d", strtotime($request->date));
+        $schedule->canceled = "0";
+        $schedule->confirmed = "0";
+        $schedule->done = "0";
+        if ($schedule->save()) {
+            Log::info("Schedule updated", [$schedule]);
+
+            $schedule->scheduleItems()->delete();
+            if ($request->items) {
+                foreach ($request->items as $item) {
+                    $this->createScheduleItems($schedule->id, $item);
+                }
+            }
+            $client = Client::where('id', $request->client_id)->firstOrFail();
+            $company = Company::find($request->company_id);
+            $firstItem = $request->items[0];
+            $data = [
+                'name' => $client->name,
+                'date' => date("d/m/Y", strtotime($schedule->date)),
+                'start_time' => $firstItem['start_time'],
+                'company' => $company->name,
+            ];
+            Mail::send('mails.rescheduled', $data, function ($message) use ($client) {
+                $message->to($client->email);
+                $message->subject('Skedyou - Reagendamento realizado com sucesso!');
+                $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+            });
+
             return response()->json([
                 "message" => "Agendamento atualizado"
             ], 200);
         } else {
-            Log::error("Error update schedule", [$shedule]);
+            Log::error("Error update schedule", [$schedule]);
             return response()->json([
                 "message" => "Erro ao atualizar agendamento"
             ], 400);
         }
     }
 
-    public function delete(Request $request)
-    {
+    public function delete(Request $request) {
         $schedule = Schedule::find($request->id);
         if ($schedule->delete()) {
             Log::info("Schedule deleted", [$schedule]);
@@ -175,9 +200,8 @@ class ScheduleController extends Controller
             ], 400);
         }
     }
-    
-    private function createScheduleItems($schedule_id, $item)
-    {
+
+    private function createScheduleItems($schedule_id, $item) {
         Log::info("Create schedule item", [$item]);
         $item['schedule_id'] = $schedule_id;
         $schedule_item = ScheduleItem::create($item);
@@ -188,8 +212,7 @@ class ScheduleController extends Controller
         }
     }
 
-    private function updateScheduleItems($schedule_id, $schedule_item)
-    {
+    private function updateScheduleItems($schedule_id, $schedule_item) {
         Log::info("Schedule Item", [$schedule_item]);
 
         if ($schedule_item->save()) {
@@ -199,13 +222,12 @@ class ScheduleController extends Controller
         }
     }
 
-    public function confirmSchedule(Request $request)
-    {
+    public function confirmSchedule(Request $request) {
         Log::info("Confirming schedule", [$request->hash]);
         try {
             $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
-            ->where("confirmed_hash", $request->hash)
-            ->firstOrFail();
+                ->where("confirmed_hash", $request->hash)
+                ->firstOrFail();
             $schedule->confirmed = "1";
             if ($schedule->save()) {
                 Log::info("Schedule confirmed", [$schedule]);

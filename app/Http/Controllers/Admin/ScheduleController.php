@@ -120,7 +120,7 @@ class ScheduleController extends Controller {
             try {
                 $schedule = null;
                 if (in_array($request->user()->type, ['g', 'f'])) {
-                    $schedule = Schedule::with("client", "company.city", "scheduleItems.employee", "scheduleItems.service")
+                    $schedule = Schedule::with("client", "company.city", "scheduleItems.employee", "scheduleItems.service.employeeServices.employee")
                         ->whereHas("company", function ($query) use ($request) {
                             $query->where("organization_id", $request->user()->organization_id);
                         })
@@ -237,6 +237,9 @@ class ScheduleController extends Controller {
             try {
                 $schedule->fill($request->all());
                 $schedule->date = date("Y-m-d", strtotime($request->date));
+                $schedule->canceled = "0";
+                $schedule->confirmed = "0";
+                $schedule->done = "0";
                 if ($schedule->save()) {
                     Log::info("Schedule updated", [$schedule]);
                     $schedule->scheduleItems()->delete();
@@ -261,7 +264,7 @@ class ScheduleController extends Controller {
                     });
 
                     return response()->json([
-                        "message" => "Reagendamento atualizado"
+                        "message" => "Agendamento atualizado"
                     ], 200);
                 } else {
                     Log::error("Error update schedule", [$schedule]);

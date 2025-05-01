@@ -53,6 +53,7 @@ Route::prefix('site')->group(function () {
     Route::prefix('schedules')->group(function () {
         Route::get('unavailables', [ScheduleController::class, 'unavailables']);
         Route::post('/', [ScheduleController::class, 'create']);
+        Route::patch('/{schedule}', [ScheduleController::class, 'update']);
         Route::get('employees', [ScheduleController::class, 'getSheduleFromEmployee']);
         Route::post('confirmSchedule', [ScheduleController::class, 'confirmSchedule']);
     });
