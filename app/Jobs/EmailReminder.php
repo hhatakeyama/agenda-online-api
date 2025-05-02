@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Models\Schedule;
+date_default_timezone_set('America/Sao_Paulo');
+
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;

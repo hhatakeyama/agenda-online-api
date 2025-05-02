@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+date_default_timezone_set("America/Sao_Paulo");
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -10,8 +12,6 @@ use App\Models\Client;
 use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
-use App\Models\Service;
-use App\Models\User;
 use Exception;
 
 class ScheduleController extends Controller {

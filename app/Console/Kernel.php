@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+date_default_timezone_set('America/Sao_Paulo');
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Scheduling\Schedule as Scheduler;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -14,7 +16,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Scheduler $scheduler): void
     {
-        date_default_timezone_set('America/Sao_Paulo');
         $scheduler->call(function () {
             Log::info('Job executed', [date("Y-m-d H:i:s")]);
             

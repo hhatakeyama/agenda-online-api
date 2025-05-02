@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+date_default_timezone_set("America/Sao_Paulo");
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Company;
-use App\Models\CompanyDaysOfWeek;
-use App\Models\CompanyEmployee;
-use App\Models\CompanyService;
 
 class CompanyController extends Controller
 {

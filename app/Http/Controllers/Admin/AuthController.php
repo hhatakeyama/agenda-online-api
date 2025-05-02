@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Exception;
+date_default_timezone_set("America/Sao_Paulo");
+
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 

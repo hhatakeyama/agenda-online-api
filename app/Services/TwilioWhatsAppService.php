@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+date_default_timezone_set('America/Sao_Paulo');
+
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 

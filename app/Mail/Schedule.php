@@ -2,8 +2,9 @@
 
 namespace App\Mail;
 
+date_default_timezone_set('America/Sao_Paulo');
+
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;

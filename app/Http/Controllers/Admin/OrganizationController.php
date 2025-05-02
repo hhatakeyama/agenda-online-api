@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+date_default_timezone_set("America/Sao_Paulo");
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Organization;

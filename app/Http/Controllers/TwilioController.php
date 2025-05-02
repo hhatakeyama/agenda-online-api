@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+date_default_timezone_set("America/Sao_Paulo");
+
 use App\Services\TwilioWhatsAppService;
 use Illuminate\Http\Request;
 
