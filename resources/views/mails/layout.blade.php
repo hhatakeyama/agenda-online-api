@@ -6,7 +6,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 <body style="font-family: 'Roboto', sans-serif; font-size: 20px;">
-	<div style="width: 60%; margin: auto;">
+	<div style="width: 100%; margin: auto;">
 		<div style="background-color: #f57842; width: 100%; margin: auto;">
 			<div style="margin: 0 auto 10px; padding: 20px; text-align: center;">
 				<a style="color: white;" href="https://skedyou.com" target="_blank">
