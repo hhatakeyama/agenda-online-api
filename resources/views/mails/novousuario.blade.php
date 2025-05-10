@@ -3,7 +3,7 @@
 <div style="text-align:center;font-size:22px;color:#333;font-weight:bold;margin-bottom:10px;">Novo cadastro</div>
 <p style="text-align:center;font-size:16px;color:#666;margin-bottom:24px;">Olá, {{$name}}.</p>
 
-<p style="text-align: justify;">
+<p style="text-align:center;font-size:16px;color:#666;margin-bottom:24px;">
   Seu cadastro foi realizado com sucesso<br /><br />
   Você pode acessar o painel e começar a utilizar nossos serviços pelo link abaixo:
 </p>
