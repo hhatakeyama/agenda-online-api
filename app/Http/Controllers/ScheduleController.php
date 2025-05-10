@@ -13,6 +13,7 @@ use App\Models\Company;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Exception;
+use Illuminate\Support\Collection;
 
 class ScheduleController extends Controller {
     public function getSheduleFromEmployee(Request $request) {
@@ -115,17 +116,24 @@ class ScheduleController extends Controller {
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-            $client = Client::where('id', $request->client_id)->firstOrFail();
-            $company = Company::find($request->company_id);
-            $firstItem = $request->items[0];
+            
+            $employees = new Collection;
+            $employeesIds = new Collection;
+            foreach ($schedule->scheduleItems as $scheduleItem) {
+                $employeeId = $scheduleItem->employee_id;
+                if (!$employeesIds->contains($employeeId)) {
+                    $employeesIds->add($scheduleItem->employee_id);
+                    $employees->add($scheduleItem->employee);
+                }
+            }
+            $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
             $data = [
-                'name' => $client->name,
-                'date' => date("d/m/Y", strtotime($schedule->date)),
-                'start_time' => $firstItem['start_time'],
-                'company' => $company->name,
+                "schedule" => $schedule,
+                "employees" => $employees,
+                "endereco" => $endereco,
             ];
-            Mail::send('mails.scheduled', $data, function ($message) use ($client) {
-                $message->to($client->email);
+            Mail::send('mails.scheduled', $data, function ($message) use ($schedule) {
+                $message->to($schedule->client->email);
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
                 $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
             });
@@ -160,17 +168,24 @@ class ScheduleController extends Controller {
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-            $client = Client::where('id', $request->client_id)->firstOrFail();
-            $company = Company::find($request->company_id);
-            $firstItem = $request->items[0];
+            
+            $employees = new Collection;
+            $employeesIds = new Collection;
+            foreach ($schedule->scheduleItems as $scheduleItem) {
+                $employeeId = $scheduleItem->employee_id;
+                if (!$employeesIds->contains($employeeId)) {
+                    $employeesIds->add($scheduleItem->employee_id);
+                    $employees->add($scheduleItem->employee);
+                }
+            }
+            $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
             $data = [
-                'name' => $client->name,
-                'date' => date("d/m/Y", strtotime($schedule->date)),
-                'start_time' => $firstItem['start_time'],
-                'company' => $company->name,
+                "schedule" => $schedule,
+                "employees" => $employees,
+                "endereco" => $endereco,
             ];
-            Mail::send('mails.rescheduled', $data, function ($message) use ($client) {
-                $message->to($client->email);
+            Mail::send('mails.rescheduled', $data, function ($message) use ($schedule) {
+                $message->to($schedule->client->email);
                 $message->subject('Skedyou - Reagendamento realizado com sucesso!');
                 $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
             });

@@ -9,6 +9,7 @@ class Company extends Model
     protected $fillable = [
         "name",
         "address",
+        "number",
         "district",
         "cep",
         "city_id",

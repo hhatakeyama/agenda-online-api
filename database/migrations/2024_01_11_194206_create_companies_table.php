@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('address');
+            $table->string('number')->nullable();
             $table->string('district');
             $table->string('cep');
             $table->integer('city_id');

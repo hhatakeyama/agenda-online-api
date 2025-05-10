@@ -12,8 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class EmailConfirmation implements ShouldQueue
-{
+class EmailConfirmation implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
@@ -21,18 +20,14 @@ class EmailConfirmation implements ShouldQueue
      */
     public $schedule;
 
-    public function __construct($schedule)
-    {
+    public function __construct($schedule) {
         $this->schedule = $schedule;
     }
 
-    public function handle(): void
-    {
+    public function handle(): void {
         Log::info('Sending confirmation e-mail', [$this->schedule]);
-        $confirmationUrl = env("SITE_URL") . "/confirm-schedule?hash=" . $this->schedule->confirmed_hash;
 
-        $this->schedule->date = date("d/m/Y", strtotime($this->schedule->date));
-        Mail::send('mails.confirmation', ['schedule' => $this->schedule, 'confirmationUrl' => $confirmationUrl], function ($message) {
+        Mail::send('mails.confirmation', ['schedule' => $this->schedule], function ($message) {
             $message->to($this->schedule->client->email);
             $message->subject('Skedyou - Confirmação de agendamento');
             $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');

@@ -12,8 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class EmailReminder implements ShouldQueue
-{
+class EmailReminder implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
@@ -21,19 +20,19 @@ class EmailReminder implements ShouldQueue
      */
     public $schedule;
 
-    public function __construct($schedule)
-    {
+    public function __construct($schedule) {
         $this->schedule = $schedule;
     }
 
-    public function handle(): void
-    {
+    public function handle(): void {
         Log::info('Sending reminder e-mail', [$this->schedule]);
 
-        $this->schedule->date = date("d/m/Y", strtotime($this->schedule->date));
-        Mail::send('mails.reminder', [
+        $endereco = $this->schedule->company->address . ', ' . $this->schedule->company->number . ', ' . $this->schedule->company->district . ', ' . $this->schedule->company->city->name . '/' . $this->schedule->company->state;
+        $data = [
             'schedule' => $this->schedule,
-        ], function ($message) {
+            'endereco' => $endereco,
+        ];
+        Mail::send('mails.reminder', $data, function ($message) {
             $message->to($this->schedule->client->email);
             $message->subject('Skedyou - Lembrete de agendamento');
             $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
