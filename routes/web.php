@@ -26,12 +26,12 @@ Route::prefix('mail')->group(function () {
     Route::get('test/twilio/whatsapp/{scheduleId}', [MailController::class, 'twilioWhatsapp']);
 
     // Previews
-    Route::get('preview/client-registration', [MailController::class, 'previewClientRegistration']);
-    Route::get('preview/user-registration', [MailController::class, 'previewUserRegistration']);
-    Route::get('preview/employee-registration', [MailController::class, 'previewEmployeeRegistration']);
-    Route::get('preview/schedule-registration', [MailController::class, 'previewScheduleRegistration']);
-    Route::get('preview/schedule-confirmation', [MailController::class, 'previewScheduleConfirmation']);
-    Route::get('preview/schedule-reminder', [MailController::class, 'previewScheduleReminder']);
-    Route::get('preview/schedule-cancelation', [MailController::class, 'previewScheduleCancelation']);
-    Route::get('preview/reschedule', [MailController::class, 'previewReschedule']);
+    Route::get('preview/client-registration/{id?}', [MailController::class, 'previewClientRegistration']);
+    Route::get('preview/user-registration/{id?}', [MailController::class, 'previewUserRegistration']);
+    Route::get('preview/employee-registration/{id?}', [MailController::class, 'previewEmployeeRegistration']);
+    Route::get('preview/schedule-registration/{id?}', [MailController::class, 'previewScheduleRegistration']);
+    Route::get('preview/schedule-confirmation/{id?}', [MailController::class, 'previewScheduleConfirmation']);
+    Route::get('preview/schedule-reminder/{id?}', [MailController::class, 'previewScheduleReminder']);
+    Route::get('preview/schedule-cancelation/{id?}', [MailController::class, 'previewScheduleCancelation']);
+    Route::get('preview/reschedule/{id?}', [MailController::class, 'previewReschedule']);
 });

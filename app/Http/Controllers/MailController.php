@@ -68,23 +68,39 @@ class MailController extends Controller {
     }
 
     // Previews
-    public function previewClientRegistration(Request $request) {
-        $client = Client::orderBy("id", "DESC")->first();
+    public function previewClientRegistration(Request $request, $id = null) {
+        if ($id) {
+            $client = Client::find($id);
+        } else {
+            $client = Client::orderBy("id", "DESC")->first();
+        }
         return new \App\Mail\ClientRegistration($client);
     }
 
-    public function previewUserRegistration(Request $request) {
-        $user = User::orderBy("id", "DESC")->first();
+    public function previewUserRegistration(Request $request, $id = null) {
+        if ($id) {
+            $user = User::find($id);
+        } else {
+            $user = User::orderBy("id", "DESC")->first();
+        }
         return new \App\Mail\UserRegistration($user);
     }
 
-    public function previewEmployeeRegistration(Request $request) {
-        $user = User::orderBy("id", "DESC")->first();
+    public function previewEmployeeRegistration(Request $request, $id = null) {
+        if ($id) {
+            $user = User::find($id);
+        } else {
+            $user = User::orderBy("id", "DESC")->first();
+        }
         return new \App\Mail\EmployeeRegistration($user);
     }
 
-    public function previewScheduleRegistration(Request $request) {
-        $schedule = Schedule::orderBy("id", "DESC")->first();
+    public function previewScheduleRegistration(Request $request, $id = null) {
+        if ($id) {
+            $schedule = Schedule::find($id);
+        } else {
+            $schedule = Schedule::orderBy("id", "DESC")->first();
+        }
         $employees = new Collection;
         $employeesIds = new Collection;
         foreach ($schedule->scheduleItems as $scheduleItem) {
@@ -98,8 +114,12 @@ class MailController extends Controller {
         return new \App\Mail\ScheduleRegistration($schedule, $employees, $endereco);
     }
 
-    public function previewScheduleConfirmation(Request $request) {
-        $schedule = Schedule::orderBy("id", "DESC")->first();
+    public function previewScheduleConfirmation(Request $request, $id = null) {
+        if ($id) {
+            $schedule = Schedule::find($id);
+        } else {
+            $schedule = Schedule::orderBy("id", "DESC")->first();
+        }
         $employees = new Collection;
         $employeesIds = new Collection;
         foreach ($schedule->scheduleItems as $scheduleItem) {
@@ -113,19 +133,31 @@ class MailController extends Controller {
         return new \App\Mail\ScheduleConfirmation($schedule, $employees, $endereco);
     }
 
-    public function previewScheduleReminder(Request $request) {
-        $schedule = Schedule::orderBy("id", "DESC")->first();
+    public function previewScheduleReminder(Request $request, $id = null) {
+        if ($id) {
+            $schedule = Schedule::find($id);
+        } else {
+            $schedule = Schedule::orderBy("id", "DESC")->first();
+        }
         $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
         return new \App\Mail\ScheduleReminder($schedule, $endereco);
     }
 
-    public function previewScheduleCancelation(Request $request) {
-        $schedule = Schedule::orderBy("id", "DESC")->first();
+    public function previewScheduleCancelation(Request $request, $id = null) {
+        if ($id) {
+            $schedule = Schedule::find($id);
+        } else {
+            $schedule = Schedule::orderBy("id", "DESC")->first();
+        }
         return new \App\Mail\Unschedule($schedule);
     }
 
-    public function previewReschedule(Request $request) {
-        $schedule = Schedule::orderBy("id", "DESC")->first();
+    public function previewReschedule(Request $request, $id = null) {
+        if ($id) {
+            $schedule = Schedule::find($id);
+        } else {
+            $schedule = Schedule::orderBy("id", "DESC")->first();
+        }
         $employees = new Collection;
         $employeesIds = new Collection;
         foreach ($schedule->scheduleItems as $scheduleItem) {
