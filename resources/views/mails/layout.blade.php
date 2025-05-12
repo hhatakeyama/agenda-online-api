@@ -21,19 +21,19 @@
 			</p>
 			<div style="margin:16px 0 0;text-align:center;">
 				<a href="https://www.instagram.com/skedyou" style="color:#f57842;text-decoration:none;padding:0 5px;" target="_blank">
-					<img alt="Instagram" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
+					<img alt="Instagram" src="{{env('APP_URL')}}/img/icons/instagram.png" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
 				</a>
 				<a href="https://www.facebook.com/skedyou" style="color:#f57842;text-decoration:none;padding:0 5px;" target="_blank">
-					<img alt="Facebook" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
+					<img alt="Facebook" src="{{env('APP_URL')}}/img/icons/facebook.png" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
 				</a>
 				<a href="https://www.tiktok.com/@skedyou" style="color:#f57842;text-decoration:none;padding:0 5px;" target="_blank">
-					<img alt="TikTok" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
+					<img alt="TikTok" src="{{env('APP_URL')}}/img/icons/tiktok.png" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
 				</a>
 				<a href="https://twitter.com/skedyou" style="color:#f57842;text-decoration:none;padding:0 5px;" target="_blank">
-					<img alt="X" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
+					<img alt="X" src="{{env('APP_URL')}}/img/icons/x.png" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
 				</a>
 				<a href="https://www.linkedin.com/company/skedyou" style="color:#f57842;text-decoration:none;padding:0 5px;" target="_blank">
-					<img alt="LinkedIn" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
+					<img alt="LinkedIn" src="{{env('APP_URL')}}/img/icons/linkedin.png" style="width:24px;height:24px;filter:brightness(0);opacity:0.8;transition:0.3s;" />
 				</a>
 			</div>
 		</div>
