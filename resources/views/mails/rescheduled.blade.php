@@ -2,10 +2,14 @@
 @section('content')
 <div style="text-align:center;font-size:22px;color:#333;font-weight:bold;margin-bottom:10px;">Reagendamento confirmado</div>
 <div style="text-align:center;font-size:16px;color:#666;margin-bottom:24px;">Esses são os detalhes do seu atendimento:</div>
-<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin-bottom:12px;">
+<div style="text-align:center;gap:15px;margin-bottom:12px;width:100%;">
   @foreach ($employees as $employee)
-  <div style="text-align:center;margin-bottom:12px;max-width:31%;">
+  <div style="display:inline-block;text-align:center;margin-bottom:5px;padding:0 5px;max-width:32%;vertical-align:top;">
+    @if($employee->picture)
     <img alt="{{$employee->name}}" src="{{env('APP_URL')}}/storage/users/original-{{$employee->picture}}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #eee;" />
+    @else
+    <img alt="{{$employee->name}}" src="{{env('APP_URL')}}/icon.png" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #eee;" />
+    @endif
     <div style="text-align:center;font-size:16px;font-weight:bold;color:#333;margin-bottom:24px;">{{$employee->name}}</div>
   </div>
   @endforeach
