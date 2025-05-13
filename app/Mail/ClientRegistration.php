@@ -17,9 +17,11 @@ class ClientRegistration extends Mailable {
      * Create a new message instance.
      */
     public $client;
+    public $password;
 
-    public function __construct($client) {
+    public function __construct($client, $password = '') {
         $this->client = $client;
+        $this->password = $password;
     }
 
     /**
@@ -38,7 +40,8 @@ class ClientRegistration extends Mailable {
         return new Content(
             view: 'mails.cadastro',
             with: [
-                'name' => $this->client->name
+                'name' => $this->client->name,
+                'password' => $this->password
             ]
         );
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 date_default_timezone_set("America/Sao_Paulo");
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -12,10 +13,8 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use App\Models\Client;
 
-class ClientController extends Controller
-{
-    public function get(Request $request)
-    {
+class ClientController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all clients", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -32,13 +31,13 @@ class ClientController extends Controller
                 else if (!empty($search))
                     $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
             });
-            if (in_array($request->user()->type, ['g', 'f'])) {
-                $clients = $clients->whereHas("schedules", function ($query) use ($request) {
-                    $query->whereHas("company", function ($query2) use ($request) {
-                        $query2->where("organization_id", $request->user()->organization_id);
-                    });
-                });
-            }
+            // if (in_array($request->user()->type, ['g', 'f'])) {
+            //     $clients = $clients->whereHas("schedules", function ($query) use ($request) {
+            //         $query->whereHas("company", function ($query2) use ($request) {
+            //             $query2->where("organization_id", $request->user()->organization_id);
+            //         });
+            //     });
+            // }
             if (!empty($status)) {
                 $clients = $clients->where("status", $status);
             }
@@ -51,8 +50,7 @@ class ClientController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a'];
         Log::info("Searching client id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -76,29 +74,42 @@ class ClientController extends Controller
         }
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Creating client", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
-            $request->validate([
+            $validations = [
                 'name' => 'required|max:255',
                 'email' => 'required|email|unique:App\Models\Client,email|max:255',
-                'password' => 'required|confirmed|max:255',
-            ], [
+            ];
+            if (!$request->autoPassword) {
+                array_push(['password' => 'required|confirmed|max:255'], $validations);
+            }
+            $request->validate($validations, [
                 "email.unique" => "E-mail já cadastrado",
             ]);
-            $client = Client::create($request->all());
-            $client->password = Hash::make($request->password);
+            $clientData = $request->all();
+            $generatedPassword = Str::random(15);
+            $clientData["password"] = Hash::make($generatedPassword);
+
+            $client = Client::create($clientData);
+            if (!$request->autoPassword) {
+                $generatedPassword = $request->password;
+            }
+            $client->password = Hash::make($generatedPassword);
+            Log::info($client);
             $token = $client->createToken($request->email, ['server:update']);
             if ($client->save()) {
                 Log::info("Client created");
-                $data = array('name' => $client->name);
-                Mail::send('mails.cadastro', $data, function ($message) use ($client) {
-                    $message->to($client->email);
-                    $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                    $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
-                });
+
+                if ($request->sendRegisterNotification === "1") {
+                    $data = array('name' => $client->name, "password" => $generatedPassword);
+                    Mail::send('mails.cadastro', $data, function ($message) use ($client) {
+                        $message->to($client->email);
+                        $message->subject('Skedyou - Cadastro efetuado com sucesso!');
+                        $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+                    });
+                }
 
                 return response()->json([
                     "client" => $client,
@@ -116,8 +127,7 @@ class ClientController extends Controller
         }
     }
 
-    public function update(Request $request, Client $client)
-    {
+    public function update(Request $request, Client $client) {
         $allowedTypes = ['s', 'a'];
         Log::info("Updating client", [$request->client, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -154,8 +164,7 @@ class ClientController extends Controller
         }
     }
 
-    public function updatePicture(Request $request, Client $client)
-    {
+    public function updatePicture(Request $request, Client $client) {
         $allowedTypes = ['s', 'a'];
         Log::info("Updating photo", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -187,8 +196,7 @@ class ClientController extends Controller
         }
     }
 
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a'];
         Log::info("Inativation of the client", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -211,8 +219,7 @@ class ClientController extends Controller
     }
 
     // Funções locais
-    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
-    {
+    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
         $filename = $filehash . "." . $extensao;
         //Tamanho original
         $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
@@ -230,8 +237,7 @@ class ClientController extends Controller
         // ));
     }
 
-    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
-    {
+    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80) {
         Log::info("Gerando foto: ", [$filePath, $filename]);
         $manager = new ImageManager(new Driver());
         $img = $manager->read($file);
