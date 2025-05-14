@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('color')->default('#424242');
             $table->enum('type', ['s', 'a', 'g', 'f'])->default("f");
             $table->tinyInteger('status')->default(1);
             $table->unsignedBigInteger('organization_id')->nullable();

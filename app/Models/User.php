@@ -8,8 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
-{
+class User extends Authenticatable {
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -23,6 +22,7 @@ class User extends Authenticatable
         'picture',
         'email',
         'password',
+        'color',
         'type',
         'organization_id',
         'can_make_service',
@@ -47,32 +47,28 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function organization()
-    {
+    public function organization() {
         return $this->belongsTo("App\Models\Organization", "organization_id", "id");
     }
 
-    public function companyEmployees()
-    {
+    public function companyEmployees() {
         return $this->hasMany("App\Models\CompanyEmployee", "employee_id", "id");
     }
 
-    public function employeeServices()
-    {
+    public function employeeServices() {
         return $this->hasMany("App\Models\EmployeeService", "employee_id", "id");
     }
 
-    public function scheduleItems()
-    {
+    public function scheduleItems() {
         return $this->hasMany("App\Models\ScheduleItem", "employee_id", "id");
     }
-    
+
     // this is a recommended way to declare event handlers
-    protected static function booted () {
-        static::deleting(function(User $user) { // before delete() method call this
-             $user->employeeServices()->delete();
-             $user->companyEmployees()->delete();
-             // do the rest of the cleanup...
+    protected static function booted() {
+        static::deleting(function (User $user) { // before delete() method call this
+            $user->employeeServices()->delete();
+            $user->companyEmployees()->delete();
+            // do the rest of the cleanup...
         });
     }
 }
