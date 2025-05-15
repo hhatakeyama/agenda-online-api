@@ -4,7 +4,7 @@
 <div style="text-align:center;font-size:16px;color:#666;margin-bottom:24px;">Olá, {{$schedule->client->name}}.</div>
 
 <p style="text-align:center;font-size:16px;color:#666;margin-bottom:24px;">
-  Seu atendimento do dia {{$schedule->date}} às {{$schedule->scheduleItems[0]->start_time}}, local {{$schedule->company->organization->tradingName}} unidade {{$schedule->company->name}} foi cancelado.
+  Seu atendimento do dia {{date("d/m/Y", strtotime($schedule->date))}} às {{$schedule->scheduleItems[0]->start_time}}, local {{$schedule->company->organization->tradingName}} unidade {{$schedule->company->name}} foi <strong>cancelado</strong>.
 </p>
 
 @if($schedule->company->phone || $schedule->company->mobilePhone)
