@@ -32,6 +32,11 @@ class ClientController extends Controller {
                 else if (!empty($search))
                     $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
             });
+            if (in_array($request->user()->type, ['g', 'f'])) {
+                $clients = $clients->whereHas("organizationClients", function ($query) use ($request) {
+                    $query->where("organization_id", $request->user()->organization_id);
+                });
+            }
             if (!empty($status)) {
                 $clients = $clients->where("status", $status);
             }

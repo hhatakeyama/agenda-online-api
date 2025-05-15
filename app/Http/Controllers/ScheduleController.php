@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Client;
 use App\Models\Company;
+use App\Models\OrganizationClient;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Exception;
@@ -98,7 +99,7 @@ class ScheduleController extends Controller {
 
     public function create(Request $request) {
         Log::info("Creating schedule", [$request]);
-        $validated = $request->validate([
+        $request->validate([
             'client_id' => 'required',
             'company_id' => 'required',
             'date' => 'required',
@@ -109,8 +110,11 @@ class ScheduleController extends Controller {
         $scheduleData['date'] = date("Y-m-d", strtotime($request->date));
         $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
         $schedule = Schedule::create($scheduleData);
-        $firstItem = $request->items[0];
+        // $firstItem = $request->items[0];
         if ($schedule->save()) {
+            if ($schedule->company->organization_id) {
+                $this->createOrganizationClient($schedule->company->organization_id, $request->client_id);
+            }
             if ($request->items) {
                 foreach ($request->items as $item) {
                     $this->createScheduleItems($schedule->id, $item);
@@ -216,6 +220,27 @@ class ScheduleController extends Controller {
         }
     }
 
+    public function confirmSchedule(Request $request) {
+        Log::info("Confirming schedule", [$request->hash]);
+        try {
+            $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
+                ->where("confirmed_hash", $request->hash)
+                ->firstOrFail();
+            $schedule->confirmed = "1";
+            if ($schedule->save()) {
+                Log::info("Schedule confirmed", [$schedule]);
+                return response()->json(["message" => "Agendamento confirmado com sucesso!"], 200);
+            } else {
+                Log::error("Schedule not saved", [$schedule]);
+                return response()->json(["message" => "Erro ao confirmar agendamento. Tente novamente mais tarde."], 500);
+            }
+        } catch (Exception $e) {
+            Log::error("Error confirming schedule", [$e->getMessage()]);
+            return response()->json(["data" => $schedule], 403);
+        }
+    }
+    
+    // Private functions
     private function createScheduleItems($schedule_id, $item) {
         Log::info("Create schedule item", [$item]);
         $item['schedule_id'] = $schedule_id;
@@ -237,23 +262,13 @@ class ScheduleController extends Controller {
         }
     }
 
-    public function confirmSchedule(Request $request) {
-        Log::info("Confirming schedule", [$request->hash]);
-        try {
-            $schedule = Schedule::with(["scheduleItems.employee", "scheduleItems.service", "company.organization"])
-                ->where("confirmed_hash", $request->hash)
-                ->firstOrFail();
-            $schedule->confirmed = "1";
-            if ($schedule->save()) {
-                Log::info("Schedule confirmed", [$schedule]);
-                return response()->json(["message" => "Agendamento confirmado com sucesso!"], 200);
-            } else {
-                Log::error("Schedule not saved", [$schedule]);
-                return response()->json(["message" => "Erro ao confirmar agendamento. Tente novamente mais tarde."], 500);
-            }
-        } catch (Exception $e) {
-            Log::error("Error confirming schedule", [$e->getMessage()]);
-            return response()->json(["data" => $schedule], 403);
+    private function createOrganizationClient($user, $clientId) {
+        Log::info("Checking create organization client", [$user, $clientId]);
+        $organizationClientData = ["client_id" => $clientId, "organization_id" => $user->organization_id];
+        $organizationClient = OrganizationClient::where($organizationClientData)->first();
+        if (!$organizationClient) {
+            OrganizationClient::create($organizationClientData);
         }
     }
+
 }

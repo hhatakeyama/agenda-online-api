@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Client;
 use App\Models\Company;
+use App\Models\OrganizationClient;
 use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Support\Collection;
@@ -190,6 +191,9 @@ class ScheduleController extends Controller {
         $schedule = Schedule::create($scheduleData);
         $firstItem = $request->items[0];
         if ($schedule->save()) {
+            if ($schedule->company->organization_id) {
+                $this->createOrganizationClient($schedule->company->organization_id, $request->client_id);
+            }
             if ($request->items) {
                 foreach ($request->items as $item) {
                     $this->createScheduleItems($schedule->id, $item);
@@ -427,6 +431,15 @@ class ScheduleController extends Controller {
             return response()->json([
                 "message" => "Erro ao deletar agendamento"
             ], 400);
+        }
+    }
+
+    private function createOrganizationClient($user, $clientId) {
+        Log::info("Checking create organization client", [$user, $clientId]);
+        $organizationClientData = ["client_id" => $clientId, "organization_id" => $user->organization_id];
+        $organizationClient = OrganizationClient::where($organizationClientData)->first();
+        if (!$organizationClient) {
+            OrganizationClient::create($organizationClientData);
         }
     }
 
