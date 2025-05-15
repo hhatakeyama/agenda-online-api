@@ -90,6 +90,7 @@ Route::prefix('admin')->group(function () {
 
         Route::prefix('clients')->group(function () {
             Route::get('/', [AdminClientController::class, 'get']);
+            Route::get('/filtered', [AdminClientController::class, 'getProtected']);
             Route::get('{id}', [AdminClientController::class, 'getById']);
             Route::post('/', [AdminClientController::class, 'create']);
             Route::patch('{client}', [AdminClientController::class, 'update']);

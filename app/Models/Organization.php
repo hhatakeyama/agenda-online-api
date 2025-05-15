@@ -13,4 +13,9 @@ class Organization extends Model
         "cnpj",
         "status",
     ];
+    
+    public function organizationClients(){
+        return $this->hasMany("App\Models\OrganizationClient", "organization_id", "id");
+    }
+
 }

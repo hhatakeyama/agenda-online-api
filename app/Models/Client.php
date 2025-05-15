@@ -8,8 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Client extends Authenticatable
-{
+class Client extends Authenticatable {
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
@@ -41,8 +40,12 @@ class Client extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    
-    public function schedules(){
+
+    public function organizationClients(){
+        return $this->hasMany("App\Models\OrganizationClient", "client_id", "id");
+    }
+
+    public function schedules() {
         return $this->hasMany("App\Models\Schedule", "client_id", "id");
     }
 }

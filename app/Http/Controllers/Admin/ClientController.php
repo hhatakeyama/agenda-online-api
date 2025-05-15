@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use App\Models\Client;
+use App\Models\OrganizationClient;
 
 class ClientController extends Controller {
     public function get(Request $request) {
@@ -31,13 +32,40 @@ class ClientController extends Controller {
                 else if (!empty($search))
                     $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
             });
-            // if (in_array($request->user()->type, ['g', 'f'])) {
-            //     $clients = $clients->whereHas("schedules", function ($query) use ($request) {
-            //         $query->whereHas("company", function ($query2) use ($request) {
-            //             $query2->where("organization_id", $request->user()->organization_id);
-            //         });
-            //     });
-            // }
+            if (!empty($status)) {
+                $clients = $clients->where("status", $status);
+            }
+            return response()->json([
+                "data" => $clients->paginate($pageSize, ['*'], 'page', $page)
+            ], 200);
+        } else {
+            Log::error("User without permission");
+            return response()->json(["message" => "Unauthorized"], 401);
+        }
+    }
+
+    public function getProtected(Request $request) {
+        $allowedTypes = ['s', 'a', 'g', 'f'];
+        Log::info("Searching all clients", [$request->user()]);
+        if (in_array($request->user()->type, $allowedTypes)) {
+            $search = $request->search;
+            $page = $request->page ? $request->page : 1;
+            $pageSize = $request->page_size ? $request->page_size : 10;
+            $status = $request->status;
+            $selected = $request->selected;
+            $clients = Client::where(function ($query) use ($search, $selected) {
+                if (!empty($search) && !empty($selected))
+                    $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%")->orWhere("id", $selected);
+                else if (!empty($selected))
+                    $query->where("id", $selected);
+                else if (!empty($search))
+                    $query->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
+            });
+            if (in_array($request->user()->type, ['g', 'f'])) {
+                $clients = $clients->whereHas("organizationClients", function ($query) use ($request) {
+                    $query->where("organization_id", $request->user()->organization_id);
+                });
+            }
             if (!empty($status)) {
                 $clients = $clients->where("status", $status);
             }
@@ -51,13 +79,15 @@ class ClientController extends Controller {
     }
 
     public function getById(Request $request, $id) {
-        $allowedTypes = ['s', 'a'];
+        $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching client id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             try {
                 $client = null;
                 if ($request->user()->type === 'g') {
-                    $client = Client::where("organization_id", $request->user()->organization_id)
+                    $client = Client::whereHas("organizationClients", function ($query) use ($request) {
+                        $query->where("organization_id", $request->user()->organization_id);
+                    })
                         ->where("id", $id)
                         ->firstOrFail();
                 } else {
@@ -101,6 +131,10 @@ class ClientController extends Controller {
             $token = $client->createToken($request->email, ['server:update']);
             if ($client->save()) {
                 Log::info("Client created");
+
+                if ($request->user()->organization_id) {
+                    $this->createOrganizationClient($request->user(), $client->id);
+                }
 
                 if ($request->sendRegisterNotification === "1") {
                     $data = array('name' => $client->name, "password" => $generatedPassword);
@@ -219,7 +253,16 @@ class ClientController extends Controller {
     }
 
     // Funções locais
-    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
+    private function createOrganizationClient($user, $clientId) {
+        Log::info("Checking create organization client", [$user, $clientId]);
+        $organizationClientData = ["client_id" => $clientId, "organization_id" => $user->organization_id];
+        $organizationClient = OrganizationClient::where($organizationClientData)->first();
+        if (!$organizationClient) {
+            OrganizationClient::create($organizationClientData);
+        }
+    }
+
+    private function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
         $filename = $filehash . "." . $extensao;
         //Tamanho original
         $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
@@ -237,7 +280,7 @@ class ClientController extends Controller {
         // ));
     }
 
-    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80) {
+    private function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80) {
         Log::info("Gerando foto: ", [$filePath, $filename]);
         $manager = new ImageManager(new Driver());
         $img = $manager->read($file);
