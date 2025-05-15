@@ -321,7 +321,7 @@ class ScheduleController extends Controller {
                 if ($schedule->save()) {
                     Log::info("Schedule canceled", [$id]);
 
-                    if ($request->status === "1") {
+                    if ($request->status == "1") {
                         $data = ['schedule' => $schedule];
                         Mail::send('mails.unscheduled', $data, function ($message) use ($schedule) {
                             $message->to($schedule->client->email);
