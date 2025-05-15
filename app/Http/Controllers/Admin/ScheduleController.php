@@ -434,9 +434,9 @@ class ScheduleController extends Controller {
         }
     }
 
-    private function createOrganizationClient($user, $clientId) {
-        Log::info("Checking create organization client", [$user, $clientId]);
-        $organizationClientData = ["client_id" => $clientId, "organization_id" => $user->organization_id];
+    private function createOrganizationClient($organization_id, $clientId) {
+        Log::info("Checking create organization client", [$organization_id, $clientId]);
+        $organizationClientData = ["client_id" => $clientId, "organization_id" => $organization_id];
         $organizationClient = OrganizationClient::where($organizationClientData)->first();
         if (!$organizationClient) {
             OrganizationClient::create($organizationClientData);
