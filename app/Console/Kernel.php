@@ -9,58 +9,58 @@ use Illuminate\Console\Scheduling\Schedule as Scheduler;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\Schedule;
 
-class Kernel extends ConsoleKernel
-{
-    /**
-     * Define the application's command schedule.
-     */
-    protected function schedule(Scheduler $scheduler): void
-    {
-        $scheduler->call(function () {
-            Log::info('Job executed', [date("Y-m-d H:i:s")]);
-            
-            $today = date("Y-m-d");
-            $tomorrow = date("Y-m-d", strtotime($today . ' + 1 days'));
-            $twoDays = date("Y-m-d", strtotime($today . ' + 2 days'));
-            Log::info('Date: ', [$today, $tomorrow, $twoDays]);
+class Kernel extends ConsoleKernel {
+  /**
+   * Define the application's command schedule.
+   */
+  protected function schedule(Scheduler $scheduler): void {
+    $scheduler->command('emails:schedule-confirmation-command')->dailyAt('08:00');
+    $scheduler->command('emails:schedule-reminder-command')->dailyAt('08:00');
 
-            $schedules = Schedule::with("client", "scheduleItems")
-                ->where("date", $tomorrow)
-                ->where("confirmed", "0")
-                ->where("canceled", "0")
-                ->where("done", "0")
-                ->get();
-            foreach ($schedules as $schedule) {
-                \App\Jobs\Sms::dispatch($schedule);
-                \App\Jobs\EmailConfirmation::dispatch($schedule);
+    $scheduler->call(function () {
+      Log::info('Job executed', [date("Y-m-d H:i:s")]);
 
-                Log::info('Sending confirmation', [$schedule->client]);
-            }
+      $today = date("Y-m-d");
+      $tomorrow = date("Y-m-d", strtotime($today . ' + 1 days'));
+      $twoDays = date("Y-m-d", strtotime($today . ' + 2 days'));
+      Log::info('Date: ', [$today, $tomorrow, $twoDays]);
 
-            $schedulesTwoDays = Schedule::with("company", "client", "scheduleItems.service", "scheduleItems.employee")
-                ->where("date", $twoDays)
-                ->where("confirmed", "0")
-                ->where("canceled", "0")
-                ->where("done", "0")
-                ->get();
-            foreach ($schedulesTwoDays as $schedule) {
-                \App\Jobs\EmailReminder::dispatch($schedule);
+      $schedules = Schedule::with("client", "scheduleItems")
+        ->where("date", $tomorrow)
+        ->where("confirmed", "0")
+        ->where("canceled", "0")
+        ->where("done", "0")
+        ->get();
+      foreach ($schedules as $schedule) {
+        // \App\Jobs\SendSmsJob::dispatch($schedule);
+        \App\Jobs\SendEmailConfirmationJob::dispatch($schedule);
 
-                Log::info('Sending reminder', [$schedule->client]);
-            }
-        })->timezone('America/Sao_Paulo')->dailyAt('08:00');
+        Log::info('Sending confirmation', [$schedule->client]);
+      }
 
-        // $schedule->command('backup:clean')->daily()->at('01:00');
-        // $schedule->command('backup:run')->twiceDaily(2, 14);
-    }
+      $schedulesTwoDays = Schedule::with("company", "client", "scheduleItems.service", "scheduleItems.employee")
+        ->where("date", $twoDays)
+        ->where("confirmed", "0")
+        ->where("canceled", "0")
+        ->where("done", "0")
+        ->get();
+      foreach ($schedulesTwoDays as $schedule) {
+        \App\Jobs\SendEmailReminderJob::dispatch($schedule);
 
-    /**
-     * Register the commands for the application.
-     */
-    protected function commands(): void
-    {
-        $this->load(__DIR__ . '/Commands');
+        Log::info('Sending reminder', [$schedule->client]);
+      }
+    })->timezone('America/Sao_Paulo')->dailyAt('08:00');
 
-        require base_path('routes/console.php');
-    }
+    // $schedule->command('backup:clean')->daily()->at('01:00');
+    // $schedule->command('backup:run')->twiceDaily(2, 14);
+  }
+
+  /**
+   * Register the commands for the application.
+   */
+  protected function commands(): void {
+    $this->load(__DIR__ . '/Commands');
+
+    require base_path('routes/console.php');
+  }
 }

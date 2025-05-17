@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 date_default_timezone_set('America/Sao_Paulo');
 
+use App\Models\LogDisparo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class EmailReminder implements ShouldQueue {
+class SendEmailReminderJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
@@ -37,5 +38,14 @@ class EmailReminder implements ShouldQueue {
             $message->subject('Skedyou - Lembrete de agendamento');
             $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
         });
+
+        LogDisparo::create([
+            'tipo' => 'email',
+            'destinatario' => $this->schedule->client->email,
+            'assunto' => json_encode("Skedyou - Lembrete de agendamento"),
+            'mensagem' => json_encode(""),
+            'status' => 'enviado',
+            'data_envio' => now(),
+        ]);
     }
 }

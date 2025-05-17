@@ -17,7 +17,6 @@ use App\Models\OrganizationClient;
 class ClientController extends Controller {
     public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
-        Log::info("Searching all clients", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
             $page = $request->page ? $request->page : 1;
@@ -51,7 +50,6 @@ class ClientController extends Controller {
 
     public function getProtected(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
-        Log::info("Searching all clients", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $search = $request->search;
             $page = $request->page ? $request->page : 1;
@@ -142,12 +140,7 @@ class ClientController extends Controller {
                 }
 
                 if ($request->sendRegisterNotification === "1") {
-                    $data = array('name' => $client->name, "password" => $generatedPassword);
-                    Mail::send('mails.cadastro', $data, function ($message) use ($client) {
-                        $message->to($client->email);
-                        $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                        $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
-                    });
+                    \App\Jobs\SendClientRegistrationJob::dispatch($client, $generatedPassword);
                 }
 
                 return response()->json([

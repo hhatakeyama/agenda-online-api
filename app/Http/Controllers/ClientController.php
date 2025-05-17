@@ -37,14 +37,8 @@ class ClientController extends Controller
         $token = $client->createToken($request->email, ['server:update']);
         if ($client->save()) {
             Log::info("Client created", [$client]);
-            // $filePath = "app/public/clients/";
-            // File::makeDirectory($filePath, $mode = 0777, true, true);
-            $data = array('name' => $client->name);
-            Mail::send('mails.cadastro', $data, function ($message) use ($client) {
-                $message->to($client->email);
-                $message->subject('Skedyou - Cadastro efetuado com sucesso!');
-                $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
-            });
+            
+            \App\Jobs\SendClientRegistrationJob::dispatch($client, "");
 
             return response()->json([
                 "token" => $token->plainTextToken,

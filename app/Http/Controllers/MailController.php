@@ -47,7 +47,7 @@ class MailController extends Controller {
         Log::info("Send confirmation email");
         try {
             $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
-            \App\Jobs\EmailConfirmation::dispatch($schedule);
+            \App\Jobs\SendEmailConfirmationJob::dispatch($schedule);
             return "Confirmation e-mail sent";
         } catch (\Exception $e) {
             return "Error sending confirmation e-mail. " . $e->getMessage();
@@ -59,7 +59,7 @@ class MailController extends Controller {
         try {
             $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
             $mobilePhoneTest = "17991323162";
-            \App\Jobs\Sms::dispatch($schedule, $mobilePhoneTest);
+            \App\Jobs\SendSmsJob::dispatch($schedule, $mobilePhoneTest);
 
             return "Confirmation SMS sent";
         } catch (\Exception $e) {

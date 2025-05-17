@@ -141,7 +141,7 @@ class ScheduleController extends Controller {
                 $message->subject('Skedyou - Agendamento efetuado com sucesso!');
                 $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
             });
-            // \App\Jobs\Sms::dispatch($schedule, $request->items);
+            // \App\Jobs\SendSmsJob::dispatch($schedule, $request->items);
             // \App\Jobs\Email::dispatch($schedule, $request->items);
 
             Log::info("Schedule created", [$schedule]);

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 date_default_timezone_set('America/Sao_Paulo');
 
+use App\Models\LogDisparo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -11,8 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class Sms implements ShouldQueue
-{
+class SendSmsJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
@@ -21,8 +21,7 @@ class Sms implements ShouldQueue
     public $schedule;
     public $mobilePhoneTest;
 
-    public function __construct($schedule, $mobilePhoneTest)
-    {
+    public function __construct($schedule, $mobilePhoneTest) {
         $this->schedule = $schedule;
         $this->mobilePhoneTest = $mobilePhoneTest;
     }
@@ -30,8 +29,7 @@ class Sms implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
-    {
+    public function handle(): void {
         Log::info("Sending SMS", [$this->schedule]);
 
         $mobilePhone = $this->mobilePhoneTest ? $this->mobilePhoneTest : $this->schedule->client->mobilePhone;
@@ -66,6 +64,15 @@ class Sms implements ShouldQueue
             $err = curl_error($curl);
 
             curl_close($curl);
+
+            LogDisparo::create([
+                'tipo' => 'sms',
+                'destinatario' => $this->schedule->client->email,
+                'assunto' => json_encode("Skedyou - Confirmação de agendamento"),
+                'mensagem' => json_encode(""),
+                'status' => 'enviado',
+                'data_envio' => now(),
+            ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
