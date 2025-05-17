@@ -36,7 +36,7 @@ class AgendarEmailsDiarios extends Command {
       LogDisparo::create([
         'tipo' => 'email',
         // 'destinatario' => $usuario->email,
-        'assunto' => json_encode("Seu resumo diário"),
+        'assunto' => "Seu resumo diário",
         'mensagem' => json_encode($dadosEmail),
         'status' => 'agendado',
         'data_agendamento' => now()

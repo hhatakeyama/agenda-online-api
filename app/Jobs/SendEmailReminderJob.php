@@ -42,7 +42,7 @@ class SendEmailReminderJob implements ShouldQueue {
         LogDisparo::create([
             'tipo' => 'email',
             'destinatario' => $this->schedule->client->email,
-            'assunto' => json_encode("Skedyou - Lembrete de agendamento"),
+            'assunto' => "Skedyou - Lembrete de agendamento",
             'mensagem' => json_encode(""),
             'status' => 'enviado',
             'data_envio' => now(),

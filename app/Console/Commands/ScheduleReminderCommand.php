@@ -41,7 +41,7 @@ class ScheduleReminderCommand extends Command {
       LogDisparo::create([
         'tipo' => 'email',
         'destinatario' => $schedule->client->email,
-        'assunto' => json_encode("Skedyou - Lembrete de agendamento"),
+        'assunto' => "Skedyou - Lembrete de agendamento",
         'mensagem' => json_encode(""),
         'status' => 'agendado',
         'data_agendamento' => now()

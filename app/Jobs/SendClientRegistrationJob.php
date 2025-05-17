@@ -40,14 +40,5 @@ class SendClientRegistrationJob implements ShouldQueue {
       $message->subject('Skedyou - Cadastro efetuado com sucesso!');
       $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
     });
-
-    LogDisparo::create([
-      'tipo' => 'email',
-      'destinatario' => $this->client->email,
-      'assunto' => json_encode("Skedyou - Cadastro efetuado com sucesso!"),
-      'mensagem' => json_encode(""),
-      'status' => 'enviado',
-      'data_envio' => now(),
-    ]);
   }
 }

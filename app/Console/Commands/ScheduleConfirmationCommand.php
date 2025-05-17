@@ -44,7 +44,7 @@ class ScheduleConfirmationCommand extends Command {
       LogDisparo::create([
         'tipo' => 'email',
         'destinatario' => $schedule->client->email,
-        'assunto' => json_encode("Skedyou - Confirmação de agendamento"),
+        'assunto' => "Skedyou - Confirmação de agendamento",
         'mensagem' => json_encode(""),
         'status' => 'agendado',
         'data_agendamento' => now()

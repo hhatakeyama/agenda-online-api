@@ -37,7 +37,7 @@ class SendEmailConfirmationJob implements ShouldQueue {
     LogDisparo::create([
       'tipo' => 'email',
       'destinatario' => $this->schedule->client->email,
-      'assunto' => json_encode("Skedyou - Confirmação de agendamento"),
+      'assunto' => "Skedyou - Confirmação de agendamento",
       'mensagem' => json_encode(""),
       'status' => 'enviado',
       'data_envio' => now(),
