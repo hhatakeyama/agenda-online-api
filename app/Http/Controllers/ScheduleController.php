@@ -108,9 +108,9 @@ class ScheduleController extends Controller {
 
         $scheduleData = $request->all();
         $scheduleData['date'] = date("Y-m-d", strtotime($request->date));
+        $scheduleData['hash'] = Hash::make(date('YmdHis'));
         $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
         $schedule = Schedule::create($scheduleData);
-        // $firstItem = $request->items[0];
         if ($schedule->save()) {
             if ($schedule->company->organization_id) {
                 $this->createOrganizationClient($schedule->company->organization_id, $request->client_id);

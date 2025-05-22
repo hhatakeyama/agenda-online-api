@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Service;
 
-class ServiceController extends Controller
-{
-    public function get(Request $request)
-    {
+class ServiceController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g', 'f'];
         Log::info("Searching all services", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -38,8 +36,7 @@ class ServiceController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching service id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -64,14 +61,12 @@ class ServiceController extends Controller
     }
 
     // Validar para type g
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Creating service", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $request->validate([
                 'name' => 'required|max:255',
-                'description' => 'required|max:255',
                 'price' => 'required',
                 'duration' => 'required',
                 'serviceCategory_id' => 'required|integer',
@@ -94,8 +89,7 @@ class ServiceController extends Controller
     }
 
     // Validar para type g
-    public function update(Request $request, Service $service)
-    {
+    public function update(Request $request, Service $service) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating service", [$request->service, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -115,8 +109,7 @@ class ServiceController extends Controller
     }
 
     // Validar para type g
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Inativation of the service", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->tinyInteger('done')->default(0);
             $table->tinyInteger('canceled')->default(0);
             $table->string("date");
+            $table->string("hash");
             $table->string("confirmed_hash");
             $table->timestamps();
 

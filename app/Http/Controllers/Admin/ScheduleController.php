@@ -152,17 +152,20 @@ class ScheduleController extends Controller {
     }
 
     function unavailables(Request $request) {
-        $date = $request->date;
-        $date = date("Y-m-d", strtotime($date));
         $company = $request->company;
         $employees = $request->employees ? explode(",", $request->employees) : [];
-        Log::info("List all unavailable schedules", [$company]);
+
+        $datesArray = explode(',', $request->dates);
+        $dates = new Collection;
+        foreach ($datesArray as $date) {
+            $dates->add(date("Y-m-d", strtotime($date)));
+        }
 
         // List all employees scheduled periods
         $employeesScheduledPeriods = ScheduleItem::with("schedule")
-            ->whereHas("schedule", function ($query) use ($company, $date) {
+            ->whereHas("schedule", function ($query) use ($company, $dates) {
                 $query->where("company_id", $company)
-                    ->where("date", $date)
+                    ->whereIn("date", $dates)
                     ->where(function ($subquery) {
                         $subquery->where([["done", 0], ["canceled", 0]])->orWhere('done', 1);
                     });
@@ -185,18 +188,36 @@ class ScheduleController extends Controller {
             'items' => 'required',
         ]);
 
+        $fixedClientHash = Hash::make(date('YmdHis'));
         $scheduleData = $request->all();
         $scheduleData['date'] = date("Y-m-d", strtotime($request->date));
-        $scheduleData['confirmed_hash'] = Hash::make($request->company_id + $request->employee_id + date('YmdHis'));
+        $scheduleData['confirmed_hash'] = Hash::make($request->company_id . $request->employee_id . $request->date . date('YmdHis'));
+        $scheduleData['hash'] = $fixedClientHash;
         $schedule = Schedule::create($scheduleData);
-        $firstItem = $request->items[0];
-        if ($schedule->save()) {
+        if ($schedule) {
+            // Link client to organization
             if ($schedule->company->organization_id) {
                 $this->createOrganizationClient($schedule->company->organization_id, $request->client_id);
             }
+            // Link scheduleItem to schedule
             if ($request->items) {
                 foreach ($request->items as $item) {
                     $this->createScheduleItems($schedule->id, $item);
+                }
+            }
+            if ($request->next_schedules) {
+                foreach ($request->next_schedules as $nextSchedule) {
+                    $nextScheduleData = $request->all();
+                    $nextScheduleData['date'] = date("Y-m-d", strtotime($nextSchedule . 'T03:00:00.000Z'));
+                    $nextScheduleData['confirmed_hash'] = Hash::make($request->company_id . $request->employee_id . $request->date . date('YmdHis'));
+                    $nextScheduleData['hash'] = $fixedClientHash;
+                    $nextSchedule = Schedule::create($nextScheduleData);
+                    
+                    if ($request->items) {
+                        foreach ($request->items as $item) {
+                            $this->createScheduleItems($nextSchedule->id, $item);
+                        }
+                    }
                 }
             }
 

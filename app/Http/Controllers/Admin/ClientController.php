@@ -160,7 +160,7 @@ class ClientController extends Controller {
     }
 
     public function update(Request $request, Client $client) {
-        $allowedTypes = ['s', 'a'];
+        $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating client", [$request->client, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
             $emailFilled = $client->email != $request->email;
