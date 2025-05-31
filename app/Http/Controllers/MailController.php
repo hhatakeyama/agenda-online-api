@@ -184,6 +184,12 @@ class MailController extends Controller {
     }
     $phoneNumber = str_replace("(", "", str_replace(")", "", str_replace(" ", "", $schedule->client->mobilePhone)));
     Log::info("Sending TwilioWhatsapp", ["+55$phoneNumber", $schedule->client->name]);
-    return $this->twilioWhatsAppService->sendMessage("+55$phoneNumber", $schedule->client->name);
+    $success = $this->twilioWhatsAppService->sendMessage("+55$phoneNumber", $schedule->client->name);
+
+    if ($success) {
+      return response()->json(['message' => 'Mensagem enviada com sucesso!']);
+    } else {
+      return response()->json(['error' => 'Falha ao enviar a mensagem.'], 500);
+    }
   }
 }
