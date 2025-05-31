@@ -9,10 +9,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Organization;
 use App\Models\Company;
 
-class OrganizationController extends Controller
-{
-    public function getCompaniesFromOrganization($slug)
-    {
+class OrganizationController extends Controller {
+    public function getCompaniesFromOrganization($slug) {
         try {
             Log::info("Searching companies from organization id", [$slug]);
             $organization = Organization::where('slug', $slug)->firstOrFail();
@@ -20,7 +18,7 @@ class OrganizationController extends Controller
             return response()->json([
                 "data" => $organization
             ], 200);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Log::error("Error searching companies from organization", [$slug]);
             return response()->json([
                 "message" => "Empresa não encontrada.",

@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\ServiceCategory;
 
-class ServiceCategoryController extends Controller
-{
-    public function get(Request $request)
-    {
+class ServiceCategoryController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching all service categories", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -38,8 +36,7 @@ class ServiceCategoryController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Searching category id", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -64,8 +61,7 @@ class ServiceCategoryController extends Controller
     }
 
     // Validar para type g
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Creating category", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -90,8 +86,7 @@ class ServiceCategoryController extends Controller
     }
 
     // Validar para type g
-    public function update(Request $request, ServiceCategory $serviceCategory)
-    {
+    public function update(Request $request, ServiceCategory $serviceCategory) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating categoria", [$request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -116,8 +111,7 @@ class ServiceCategoryController extends Controller
     }
 
     // Validar para type g
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Inativation of the category", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {

@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Schedule;
 
-class SMSController extends Controller
-{
-    public function sendMessage($schedule, $message)
-    {
+class SMSController extends Controller {
+    public function sendMessage($schedule, $message) {
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => "https://api.smsdev.com.br/v1/send?key=" . getenv("TOKEN_SMS_DEV") . "&type=9&number=" . $schedule->client->mobilePhone . "&refer=" . $schedule->confirmed_hash . "&msg=" . urlencode($message),
@@ -31,8 +29,7 @@ class SMSController extends Controller
         curl_close($curl);
     }
 
-    public function receiveResponseFromMessage()
-    {
+    public function receiveResponseFromMessage() {
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
@@ -56,8 +53,7 @@ class SMSController extends Controller
         curl_close($curl);
     }
 
-    public function confirmationScheduleMessage($response)
-    {
+    public function confirmationScheduleMessage($response) {
         Log::info("Received schedule to confirmed", [$response]);
         $shedule = Schedule::where('confirmed_hash', $response->refer)->firstOrFail();
         $shedule->confirmed = $response->descricao == 1 ? "1" : "0";

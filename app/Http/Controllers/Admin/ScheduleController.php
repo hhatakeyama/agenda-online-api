@@ -212,7 +212,7 @@ class ScheduleController extends Controller {
                     $nextScheduleData['confirmed_hash'] = Hash::make($request->company_id . $request->employee_id . $request->date . date('YmdHis'));
                     $nextScheduleData['hash'] = $fixedClientHash;
                     $nextSchedule = Schedule::create($nextScheduleData);
-                    
+
                     if ($request->items) {
                         foreach ($request->items as $item) {
                             $this->createScheduleItems($nextSchedule->id, $item);

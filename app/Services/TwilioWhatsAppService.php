@@ -20,8 +20,8 @@ class TwilioWhatsAppService {
 
     public function sendMessage(string $to, string $message): bool {
         try {
+            Log::info("sending whatsapp twilio");
             $client = new Client($this->sid, $this->token);
-
             $client->messages->create(
                 'whatsapp:' . $to, // Para quem vamos enviar a mensagem
                 [

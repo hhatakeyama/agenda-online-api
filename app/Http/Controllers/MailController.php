@@ -4,170 +4,186 @@ namespace App\Http\Controllers;
 
 date_default_timezone_set("America/Sao_Paulo");
 
-use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Services\TwilioWhatsAppService;
+use App\Models\Client;
 use App\Models\Schedule;
-use App\Models\Company;
 use App\Models\User;
-use Illuminate\Support\Collection;
 
 class MailController extends Controller {
-    // Send
-    public function schedule(Request $request, $companyId, $email, $scheduleId) {
-        Log::info("Send schedule email");
+  protected $twilioWhatsAppService;
 
-        $schedule = Schedule::findOrFail($scheduleId);
-        $employees = new Collection;
-        $employeesIds = new Collection;
-        foreach ($schedule->scheduleItems as $scheduleItem) {
-            $employeeId = $scheduleItem->employee_id;
-            if (!$employeesIds->contains($employeeId)) {
-                $employeesIds->add($scheduleItem->employee_id);
-                $employees->add($scheduleItem->employee);
-            }
-        }
-        $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
-        $data = [
-            "schedule" => $schedule,
-            "employees" => $employees,
-            "endereco" => $endereco,
-        ];
-        Mail::send('mails.scheduled', $data, function ($message) use ($email) {
-            $message->to($email);
-            $message->subject('Skedyou - Agendamento efetuado com sucesso!');
-            $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
-        });
+  public function __construct(TwilioWhatsAppService $twilioWhatsAppService) {
+    $this->twilioWhatsAppService = $twilioWhatsAppService;
+  }
 
-        return "Schedule e-mail sent";
+  // Send
+  public function schedule(Request $request, $companyId, $email, $scheduleId) {
+    Log::info("Send schedule email");
+
+    $schedule = Schedule::findOrFail($scheduleId);
+    $employees = new Collection;
+    $employeesIds = new Collection;
+    foreach ($schedule->scheduleItems as $scheduleItem) {
+      $employeeId = $scheduleItem->employee_id;
+      if (!$employeesIds->contains($employeeId)) {
+        $employeesIds->add($scheduleItem->employee_id);
+        $employees->add($scheduleItem->employee);
+      }
     }
+    $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
+    $data = [
+      "schedule" => $schedule,
+      "employees" => $employees,
+      "endereco" => $endereco,
+    ];
+    Mail::send('mails.scheduled', $data, function ($message) use ($email) {
+      $message->to($email);
+      $message->subject('Skedyou - Agendamento efetuado com sucesso!');
+      $message->from('naoresponda@skedyou.app', 'Equipe Skedyou');
+    });
 
-    public function confirmationEmail(Request $request, $scheduleId) {
-        Log::info("Send confirmation email");
-        try {
-            $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
-            \App\Jobs\SendEmailConfirmationJob::dispatch($schedule);
-            return "Confirmation e-mail sent";
-        } catch (\Exception $e) {
-            return "Error sending confirmation e-mail. " . $e->getMessage();
-        }
+    return "Schedule e-mail sent";
+  }
+
+  public function confirmationEmail(Request $request, $scheduleId) {
+    Log::info("Send confirmation email");
+    try {
+      $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
+      \App\Jobs\SendEmailConfirmationJob::dispatch($schedule);
+      return "Confirmation e-mail sent";
+    } catch (\Exception $e) {
+      return "Error sending confirmation e-mail. " . $e->getMessage();
     }
+  }
 
-    public function confirmationSms(Request $request, $scheduleId) {
-        Log::info("Send confirmation SMS");
-        try {
-            $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
-            $mobilePhoneTest = "17991323162";
-            \App\Jobs\SendSmsJob::dispatch($schedule, $mobilePhoneTest);
+  public function confirmationSms(Request $request, $scheduleId) {
+    Log::info("Send confirmation SMS");
+    try {
+      $schedule = Schedule::with("client", "scheduleItems")->findOrFail($scheduleId);
+      $mobilePhoneTest = "17991323162";
+      \App\Jobs\SendSmsJob::dispatch($schedule, $mobilePhoneTest);
 
-            return "Confirmation SMS sent";
-        } catch (\Exception $e) {
-            return "Error sending confirmation SMS. " . $e->getMessage();
-        }
+      return "Confirmation SMS sent";
+    } catch (\Exception $e) {
+      return "Error sending confirmation SMS. " . $e->getMessage();
     }
+  }
 
-    // Previews
-    public function previewClientRegistration(Request $request, $id = null) {
-        if ($id) {
-            $client = Client::find($id);
-        } else {
-            $client = Client::orderBy("id", "DESC")->first();
-        }
-        return new \App\Mail\ClientRegistration($client);
+  // Previews
+  public function previewClientRegistration(Request $request, $id = null) {
+    if ($id) {
+      $client = Client::find($id);
+    } else {
+      $client = Client::orderBy("id", "DESC")->first();
     }
+    return new \App\Mail\ClientRegistration($client);
+  }
 
-    public function previewUserRegistration(Request $request, $id = null) {
-        if ($id) {
-            $user = User::find($id);
-        } else {
-            $user = User::orderBy("id", "DESC")->first();
-        }
-        return new \App\Mail\UserRegistration($user);
+  public function previewUserRegistration(Request $request, $id = null) {
+    if ($id) {
+      $user = User::find($id);
+    } else {
+      $user = User::orderBy("id", "DESC")->first();
     }
+    return new \App\Mail\UserRegistration($user);
+  }
 
-    public function previewEmployeeRegistration(Request $request, $id = null) {
-        if ($id) {
-            $user = User::find($id);
-        } else {
-            $user = User::orderBy("id", "DESC")->first();
-        }
-        return new \App\Mail\EmployeeRegistration($user);
+  public function previewEmployeeRegistration(Request $request, $id = null) {
+    if ($id) {
+      $user = User::find($id);
+    } else {
+      $user = User::orderBy("id", "DESC")->first();
     }
+    return new \App\Mail\EmployeeRegistration($user);
+  }
 
-    public function previewScheduleRegistration(Request $request, $id = null) {
-        if ($id) {
-            $schedule = Schedule::find($id);
-        } else {
-            $schedule = Schedule::orderBy("id", "DESC")->first();
-        }
-        $employees = new Collection;
-        $employeesIds = new Collection;
-        foreach ($schedule->scheduleItems as $scheduleItem) {
-            $employeeId = $scheduleItem->employee_id;
-            if (!$employeesIds->contains($employeeId)) {
-                $employeesIds->add($scheduleItem->employee_id);
-                $employees->add($scheduleItem->employee);
-            }
-        }
-        $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
-        return new \App\Mail\ScheduleRegistration($schedule, $employees, $endereco);
+  public function previewScheduleRegistration(Request $request, $id = null) {
+    if ($id) {
+      $schedule = Schedule::find($id);
+    } else {
+      $schedule = Schedule::orderBy("id", "DESC")->first();
     }
+    $employees = new Collection;
+    $employeesIds = new Collection;
+    foreach ($schedule->scheduleItems as $scheduleItem) {
+      $employeeId = $scheduleItem->employee_id;
+      if (!$employeesIds->contains($employeeId)) {
+        $employeesIds->add($scheduleItem->employee_id);
+        $employees->add($scheduleItem->employee);
+      }
+    }
+    $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
+    return new \App\Mail\ScheduleRegistration($schedule, $employees, $endereco);
+  }
 
-    public function previewScheduleConfirmation(Request $request, $id = null) {
-        if ($id) {
-            $schedule = Schedule::find($id);
-        } else {
-            $schedule = Schedule::orderBy("id", "DESC")->first();
-        }
-        $employees = new Collection;
-        $employeesIds = new Collection;
-        foreach ($schedule->scheduleItems as $scheduleItem) {
-            $employeeId = $scheduleItem->employee_id;
-            if (!$employeesIds->contains($employeeId)) {
-                $employeesIds->add($scheduleItem->employee_id);
-                $employees->add($scheduleItem->employee);
-            }
-        }
-        $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
-        return new \App\Mail\ScheduleConfirmation($schedule, $employees, $endereco);
+  public function previewScheduleConfirmation(Request $request, $id = null) {
+    if ($id) {
+      $schedule = Schedule::find($id);
+    } else {
+      $schedule = Schedule::orderBy("id", "DESC")->first();
     }
+    $employees = new Collection;
+    $employeesIds = new Collection;
+    foreach ($schedule->scheduleItems as $scheduleItem) {
+      $employeeId = $scheduleItem->employee_id;
+      if (!$employeesIds->contains($employeeId)) {
+        $employeesIds->add($scheduleItem->employee_id);
+        $employees->add($scheduleItem->employee);
+      }
+    }
+    $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
+    return new \App\Mail\ScheduleConfirmation($schedule, $employees, $endereco);
+  }
 
-    public function previewScheduleReminder(Request $request, $id = null) {
-        if ($id) {
-            $schedule = Schedule::find($id);
-        } else {
-            $schedule = Schedule::orderBy("id", "DESC")->first();
-        }
-        $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
-        return new \App\Mail\ScheduleReminder($schedule, $endereco);
+  public function previewScheduleReminder(Request $request, $id = null) {
+    if ($id) {
+      $schedule = Schedule::find($id);
+    } else {
+      $schedule = Schedule::orderBy("id", "DESC")->first();
     }
+    $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
+    return new \App\Mail\ScheduleReminder($schedule, $endereco);
+  }
 
-    public function previewScheduleCancelation(Request $request, $id = null) {
-        if ($id) {
-            $schedule = Schedule::find($id);
-        } else {
-            $schedule = Schedule::orderBy("id", "DESC")->first();
-        }
-        return new \App\Mail\Unschedule($schedule);
+  public function previewScheduleCancelation(Request $request, $id = null) {
+    if ($id) {
+      $schedule = Schedule::find($id);
+    } else {
+      $schedule = Schedule::orderBy("id", "DESC")->first();
     }
+    return new \App\Mail\Unschedule($schedule);
+  }
 
-    public function previewReschedule(Request $request, $id = null) {
-        if ($id) {
-            $schedule = Schedule::find($id);
-        } else {
-            $schedule = Schedule::orderBy("id", "DESC")->first();
-        }
-        $employees = new Collection;
-        $employeesIds = new Collection;
-        foreach ($schedule->scheduleItems as $scheduleItem) {
-            $employeeId = $scheduleItem->employee_id;
-            if (!$employeesIds->contains($employeeId)) {
-                $employeesIds->add($scheduleItem->employee_id);
-                $employees->add($scheduleItem->employee);
-            }
-        }
-        $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
-        return new \App\Mail\Reschedule($schedule, $employees, $endereco);
+  public function previewReschedule(Request $request, $id = null) {
+    if ($id) {
+      $schedule = Schedule::find($id);
+    } else {
+      $schedule = Schedule::orderBy("id", "DESC")->first();
     }
+    $employees = new Collection;
+    $employeesIds = new Collection;
+    foreach ($schedule->scheduleItems as $scheduleItem) {
+      $employeeId = $scheduleItem->employee_id;
+      if (!$employeesIds->contains($employeeId)) {
+        $employeesIds->add($scheduleItem->employee_id);
+        $employees->add($scheduleItem->employee);
+      }
+    }
+    $endereco = $schedule->company->address . ', ' . $schedule->company->number . ', ' . $schedule->company->district . ', ' . $schedule->company->city->name . '/' . $schedule->company->state;
+    return new \App\Mail\Reschedule($schedule, $employees, $endereco);
+  }
+
+  public function twilioWhatsapp(Request $request, $id = null) {
+    $schedule = Schedule::orderBy("id", "DESC")->first();
+    if ($id) {
+      $schedule = Schedule::find($id);
+    }
+    $phoneNumber = str_replace("(", "", str_replace(")", "", str_replace(" ", "", $schedule->client->mobilePhone)));
+    Log::info("Sending TwilioWhatsapp", ["+55$phoneNumber", $schedule->client->name]);
+    return $this->twilioWhatsAppService->sendMessage("+55$phoneNumber", $schedule->client->name);
+  }
 }

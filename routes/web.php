@@ -23,7 +23,7 @@ Route::prefix('mail')->group(function () {
     Route::get('schedule/{companyId}/{email}/{scheduleId}', [MailController::class, 'schedule']);
     Route::get('confirmation/email/{scheduleId}', [MailController::class, 'confirmationEmail']);
     Route::get('confirmation/sms/{scheduleId}', [MailController::class, 'confirmationSms']);
-    Route::get('test/twilio/whatsapp/{scheduleId}', [MailController::class, 'twilioWhatsapp']);
+    Route::get('twilio/whatsapp/{scheduleId}', [MailController::class, 'twilioWhatsapp']);
 
     // Previews
     Route::get('preview/client-registration/{id?}', [MailController::class, 'previewClientRegistration']);

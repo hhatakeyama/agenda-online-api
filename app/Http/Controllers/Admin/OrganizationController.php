@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Organization;
 
-class OrganizationController extends Controller
-{
-    public function get(Request $request)
-    {
+class OrganizationController extends Controller {
+    public function get(Request $request) {
         $allowedTypes = ['s', 'a'];
         Log::info("Searching all organizations", [$request->user()]);
         if ($request->user()->type && in_array($request->user()->type, $allowedTypes)) {
@@ -29,8 +27,7 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
-    {
+    public function getById(Request $request, $id) {
         $allowedTypes = ['g', 'f'];
         Log::info("Searching organization id", [$id, $request->user()]);
         if ($request->user()) {
@@ -53,8 +50,7 @@ class OrganizationController extends Controller
     }
 
     // Validar para type g
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         $allowedTypes = ['s', 'a'];
         if (in_array($request->user()->type, $allowedTypes)) {
             Log::info("Creating organization");
@@ -86,8 +82,7 @@ class OrganizationController extends Controller
     }
 
     // Validar para type g
-    public function update(Request $request, Organization $organization)
-    {
+    public function update(Request $request, Organization $organization) {
         $allowedTypes = ['s', 'a', 'g'];
         Log::info("Updating organization", [$organization, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {
@@ -148,8 +143,7 @@ class OrganizationController extends Controller
     }
 
     // Validar para type g
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $allowedTypes = ['s', 'a'];
         Log::info("Inativation of the organization", [$id, $request->user()]);
         if (in_array($request->user()->type, $allowedTypes)) {

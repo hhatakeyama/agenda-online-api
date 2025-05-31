@@ -8,9 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class AuthController extends Controller
-{
-    public function login(Request $request){
+class AuthController extends Controller {
+    public function login(Request $request) {
         Log::info("Login attempt", [$request->email]);
         $credentials = $request->only(['email', 'password']);
         Log::info("credentials", [$credentials]);
@@ -27,8 +26,8 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request){
-        if(method_exists($request->user()->currentAccessToken(), 'delete')) {
+    public function logout(Request $request) {
+        if (method_exists($request->user()->currentAccessToken(), 'delete')) {
             $request->user()->currentAccessToken()->delete();
         }
         Auth::guard('web')->logout();

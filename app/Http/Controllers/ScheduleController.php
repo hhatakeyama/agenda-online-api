@@ -120,7 +120,7 @@ class ScheduleController extends Controller {
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-            
+
             $employees = new Collection;
             $employeesIds = new Collection;
             foreach ($schedule->scheduleItems as $scheduleItem) {
@@ -172,7 +172,7 @@ class ScheduleController extends Controller {
                     $this->createScheduleItems($schedule->id, $item);
                 }
             }
-            
+
             $employees = new Collection;
             $employeesIds = new Collection;
             foreach ($schedule->scheduleItems as $scheduleItem) {
@@ -239,7 +239,7 @@ class ScheduleController extends Controller {
             return response()->json(["data" => $schedule], 403);
         }
     }
-    
+
     // Private functions
     private function createScheduleItems($schedule_id, $item) {
         Log::info("Create schedule item", [$item]);
@@ -270,5 +270,4 @@ class ScheduleController extends Controller {
             OrganizationClient::create($organizationClientData);
         }
     }
-
 }

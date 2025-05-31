@@ -33,7 +33,7 @@ class EmployeeController extends Controller {
                     ->where("organization_id", $request->user()->organization_id);
             } else {
                 $employees = User::with("organization", "employeeServices")
-                ->where("can_make_service", "1")
+                    ->where("can_make_service", "1")
                     ->where(function ($subquery) use ($search) {
                         $subquery->where("name", "LIKE", "%$search%")->orWhere("email", "LIKE", "%$search%");
                     });

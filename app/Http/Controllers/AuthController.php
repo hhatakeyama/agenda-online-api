@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Client;
 
-class AuthController extends Controller
-{
-    public function login(Request $request){
+class AuthController extends Controller {
+    public function login(Request $request) {
         Log::info("request", [$request]);
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -32,7 +31,7 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request) {
         $request->user()->currentAccessToken()->delete();
         return response()->json([
             'message' => 'Successfully logged out'

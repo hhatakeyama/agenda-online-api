@@ -12,18 +12,15 @@ use App\Models\Client;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 
-class ClientController extends Controller
-{
-    public function me(Request $request)
-    {
+class ClientController extends Controller {
+    public function me(Request $request) {
         Log::info("Searching me ", [$request->user()]);
         return response()->json([
             'data' => $request->user()
         ], 200);
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         Log::info("Creating client");
         $request->validate([
             'name' => 'required|max:255',
@@ -37,7 +34,7 @@ class ClientController extends Controller
         $token = $client->createToken($request->email, ['server:update']);
         if ($client->save()) {
             Log::info("Client created", [$client]);
-            
+
             \App\Jobs\SendClientRegistrationJob::dispatch($client, "");
 
             return response()->json([
@@ -52,8 +49,7 @@ class ClientController extends Controller
         }
     }
 
-    public function update(Request $request, Client $client)
-    {
+    public function update(Request $request, Client $client) {
         $allowedTypes = ['a', 's'];
         if (
             (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
@@ -94,8 +90,7 @@ class ClientController extends Controller
         }
     }
 
-    public function updatePicture(Request $request, Client $client)
-    {
+    public function updatePicture(Request $request, Client $client) {
         $allowedTypes = ['a', 's'];
         if (
             (property_exists($request->user(), 'type') && !in_array($request->user()->type, $allowedTypes)) ||
@@ -134,8 +129,7 @@ class ClientController extends Controller
     }
 
     // Funções locais
-    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0)
-    {
+    public function gerarFotos($filePath, $filehash, $extensao, $file, $rotate = 0) {
         $filename = $filehash . "." . $extensao;
         //Tamanho original
         $this->cropImage($filePath, "original-" . $filename, $extensao, $file, 0, 0, array(
@@ -153,8 +147,7 @@ class ClientController extends Controller
         // ));
     }
 
-    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80)
-    {
+    public function cropImage($filePath, $filename, $extensao, $file, $imgWidth, $imgHeight, $options = array(), $qualidade = 80) {
         Log::info("Gerando foto: ", [$filePath, $filename]);
         $manager = new ImageManager(new Driver());
         $img = $manager->read($file);

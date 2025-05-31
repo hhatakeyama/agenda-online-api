@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Schedule;
 
-class WebhookController extends Controller
-{
-    public function webhook(Request $request)
-    {
+class WebhookController extends Controller {
+    public function webhook(Request $request) {
         Log::info("Call Webhook", [$request->all()]);
         $refer = $request->refer;
         $action = explode('|', $refer);
@@ -33,7 +31,7 @@ class WebhookController extends Controller
                 return response()->json(["message" => "Agendamento não encontrado"], 403);
             }
         }
-        
+
         Log::error("No action found");
         return response()->json(["message" => "Ação não existe"], 403);
     }
